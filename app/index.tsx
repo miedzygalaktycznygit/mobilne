@@ -1,10 +1,12 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Link, useRouter } from 'expo-router'; 
-
+import LoginForms from '@/components/loginForm';
 
 const AuthScreen = () => {
   const router = useRouter(); 
+
+  const [role, setRole] = useState('owner');
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -12,42 +14,27 @@ const AuthScreen = () => {
       
       <Text style={styles.label}>Wybierz typ konta:</Text>
       <View style={styles.roleSelector}>
-        <TouchableOpacity style={[styles.roleButton, styles.roleActive]}>
+        <TouchableOpacity style={[styles.roleButton, styles.roleActive]} onPress = {() => setRole('owner')}>
           <Text style={styles.roleText}>Właściciel</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.roleButton}>
+        <TouchableOpacity style={styles.roleButton} onPress={() => setRole('vet')}>
           <Text style={styles.roleText}>Weterynarz</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.roleButton}>
+        <TouchableOpacity style={styles.roleButton} onPress={() => setRole('hotel')}>
           <Text style={styles.roleText}>Hotel</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.form}>
-        <TextInput 
-          style={styles.input} 
-          placeholder="Adres e-mail"
-          keyboardType="email-address"
-        />
-        <TextInput 
-          style={styles.input} 
-          placeholder="Hasło" 
-          secureTextEntry 
-        />
-        
-        
+
+        <LoginForms role={role}/>
+
+
         <TouchableOpacity 
           style={styles.primaryButton}
           onPress={() => router.push('/ownerDashboard' as any)} 
         >
-          <Text style={styles.primaryButtonText}>Zaloguj się (Właściciel)</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.primaryButton, {backgroundColor: '#555'}]}
-          onPress={() => router.push('/specialistDashboard' as any)} 
-        >
-          <Text style={styles.primaryButtonText}>Zaloguj (Weterynarz/Hotel)</Text>
+          <Text style={styles.primaryButtonText}>Zaloguj się</Text>
         </TouchableOpacity>
         
         
