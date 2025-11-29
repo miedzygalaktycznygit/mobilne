@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import LoginForms from '@/components/loginForm'; 
-//import registerHandler from '@/frontToServer/registerHandler'; 
+import registerHandler from '@/frontToServer/registerHandler'; 
 
 const RegisterScreen = () => {
   const router = useRouter();
