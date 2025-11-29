@@ -25,7 +25,7 @@ const OwnerDashboardScreen = () => {
         return;
       }
 
-      const response = await fetch(`http://192.168.0.105:3000/pets?ownerId=${userId}`);
+      const response = await fetch(`http://192.168.0.95:3000/pets?ownerId=${userId}`);
       const data = await response.json();
       
       setPets(data);

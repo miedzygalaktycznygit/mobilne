@@ -1,4 +1,3 @@
-// frontToServer/addPetHandler.ts
 import * as SecureStore from 'expo-secure-store';
 
 interface PetData {
@@ -27,7 +26,7 @@ export const addPetHandler = async (petData: Omit<PetData, 'ownerId'>) => {
       ownerId: parseInt(userId),
     };
 
-    const response = await fetch('http://192.168.0.105:3000/pets', {
+    const response = await fetch('http://192.168.0.95:3000/pets', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -15,7 +15,7 @@ const AuthScreen = () => {
 
   const createTestUser = async () => {
     try {
-      const response = await fetch('http://192.168.0.105:3000/register', { 
+      const response = await fetch('http://192.168.0.95:3000/register', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
