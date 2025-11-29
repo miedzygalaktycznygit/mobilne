@@ -2,11 +2,38 @@ import React, {useState} from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Link, useRouter } from 'expo-router'; 
 import LoginForms from '@/components/loginForm';
+import loginHandler from '@/frontToServer/loginHandler';
 
 const AuthScreen = () => {
   const router = useRouter(); 
 
   const [role, setRole] = useState('owner');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [id, setId] = useState<string>('');
+
+
+  const createTestUser = async () => {
+    try {
+      const response = await fetch('http://192.168.0.95:3000/register', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: "nowy@test.pl", 
+          password: "1234", 
+          role: "owner"
+        })
+      });
+      
+      const data = await response.json();
+      console.log("Stworzono usera:", data);
+      alert("Stworzono! Teraz sprawdź db.json i zaloguj się.");
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -27,15 +54,27 @@ const AuthScreen = () => {
 
       <View style={styles.form}>
 
-        <LoginForms role={role}/>
+        <LoginForms 
+          role={role}
+          email={email}       setEmail={setEmail}
+          password={password} setPassword={setPassword}
+          id={id} setId={setId}
+        />
 
 
         <TouchableOpacity 
           style={styles.primaryButton}
-          onPress={() => router.push('/ownerDashboard' as any)} 
+          onPress={() => loginHandler({ email, password, role, id })} 
         >
           <Text style={styles.primaryButtonText}>Zaloguj się</Text>
         </TouchableOpacity>
+
+        {/* <TouchableOpacity 
+          style={[styles.primaryButton, {backgroundColor: '#555'}]}
+          onPress={() => router.push('/specialistDashboard' as any)} 
+        >
+          <Text style={styles.primaryButtonText}>Zaloguj (Weterynarz/Hotel)</Text>
+        </TouchableOpacity> */}
         
         
         <Link href={"/register" as any} asChild>
@@ -49,6 +88,7 @@ const AuthScreen = () => {
           onPress={() => {}} 
           color="#6B7280"
         />
+        <Button title="STWÓRZ KONTO TESTOWE" onPress={createTestUser} color="red" />
       </View>
     </ScrollView>
   );

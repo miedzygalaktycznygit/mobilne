@@ -2,10 +2,17 @@ import React, {useState} from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 
 interface Form {
-    role: string;
+  role: string;
+  email: string;
+  setEmail: (text: string) => void;
+  password: string;
+  setPassword: (text: string) => void;
+  id: string;
+  setId: (text: string) => void;
 }
 
-export default function loginForms({ role }: Form) {
+export default function loginForms({ role, email, setEmail, password, setPassword, id, setId }: Form) {
+
   switch (role){
     case 'owner':
       return(
@@ -14,11 +21,15 @@ export default function loginForms({ role }: Form) {
             style={styles.input} 
             placeholder="Adres e-mail"
             keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
           />
           <TextInput 
             style={styles.input} 
             placeholder="Hasło" 
             secureTextEntry 
+            value={password}
+            onChangeText={setPassword}
           />
         </View>
       );
@@ -29,16 +40,22 @@ export default function loginForms({ role }: Form) {
             style={styles.input} 
             placeholder="Adres e-mail"
             keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
           />
           <TextInput 
             style={styles.input} 
             placeholder="Hasło" 
             secureTextEntry 
+            value={password}
+            onChangeText={setPassword}
           />
           <TextInput 
             style={styles.input} 
             placeholder="Identyfikator weterynarza" 
             secureTextEntry 
+            value={id}
+            onChangeText={setId}
           />
         </View>
       );
@@ -49,16 +66,22 @@ export default function loginForms({ role }: Form) {
             style={styles.input} 
             placeholder="Adres e-mail"
             keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
           />
           <TextInput 
             style={styles.input} 
             placeholder="Hasło" 
             secureTextEntry 
+            value={password}
+            onChangeText={setPassword}
           />
           <TextInput 
             style={styles.input} 
             placeholder="Identyfikator hotelu" 
             secureTextEntry 
+            value={id}
+            onChangeText={setId}
           />
         </View>
       );
