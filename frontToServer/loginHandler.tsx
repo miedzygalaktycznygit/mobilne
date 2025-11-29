@@ -33,7 +33,7 @@ export default async function loginHandler({ email, password, role, id }: Form) 
     return;
   }
   try {
-    const response = await fetch("http://192.168.0.95:3000/login", {
+    const response = await fetch("http://192.168.0.105:3000/login", {
       method: "POST",
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -50,6 +50,10 @@ export default async function loginHandler({ email, password, role, id }: Form) 
     }
 
     await SecureStore.setItemAsync('userToken', data.accessToken);
+
+    if (data.user && data.user.id) {
+        await SecureStore.setItemAsync('userId', data.user.id.toString());
+    }
 
     switch (role){
       case 'owner':

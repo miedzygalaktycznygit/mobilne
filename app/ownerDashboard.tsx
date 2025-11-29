@@ -1,26 +1,75 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Link } from 'expo-router'; 
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { Link, useRouter, useFocusEffect } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+
+interface Pet {
+  id: number;
+  ownerId: number;
+  name: string;
+  species: string;
+  breed: string;
+  uniqueId: string;
+}
 
 const OwnerDashboardScreen = () => {
+  const [pets, setPets] = useState<Pet[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchMyPets = async () => {
+    try {
+      const userId = await SecureStore.getItemAsync('userId');
+      
+      if (!userId) {
+        console.error("Brak zalogowanego użytkownika");
+        return;
+      }
+
+      const response = await fetch(`http://192.168.0.105:3000/pets?ownerId=${userId}`);
+      const data = await response.json();
+      
+      setPets(data);
+    } catch (error) {
+      console.error("Błąd pobierania zwierząt:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchMyPets();
+    }, [])
+  );
+
   return (
     <View style={styles.container}>
       <ScrollView>
         <Text style={styles.subtitle}>Twoje zwierzęta:</Text>
         
-        
-        <Link href={"/petProfileOwner" as any} asChild>
-          <TouchableOpacity style={styles.petCard}>
-            <View style={styles.petAvatar} />
-            <View>
-              <Text style={styles.petName}>Burek</Text>
-              <Text style={styles.petSpecies}>Pies, Mieszaniec</Text>
-            </View>
-          </TouchableOpacity>
-        </Link>
-        
-        
-
+        {loading ? (
+          <ActivityIndicator size="large" color="#3B82F6" />
+        ) : (
+          <>
+            {pets.length === 0 ? (
+              <Text style={{textAlign: 'center', color: '#666', marginTop: 20}}>
+                Nie masz jeszcze dodanych zwierząt.
+              </Text>
+            ) : (
+              pets.map((pet) => (
+                <Link key={pet.id} href={"/petProfileOwner" as any} asChild>
+                  <TouchableOpacity style={styles.petCard}>
+                    <View style={styles.petAvatar} />
+                    <View>
+                      <Text style={styles.petName}>{pet.name}</Text>
+                      <Text style={styles.petSpecies}>{pet.species}, {pet.breed}</Text>
+                    </View>
+                  </TouchableOpacity>
+                </Link>
+              ))
+            )}
+          </>
+        )}
       </ScrollView>
 
       
