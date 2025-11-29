@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
 import { API_URL } from "@/globalIp";
 
 interface PetData {
@@ -15,11 +15,11 @@ interface PetData {
   photo: string;
 }
 
-export const addPetHandler = async (petData: Omit<PetData, 'ownerId'>) => {
+export const addPetHandler = async (petData: Omit<PetData, "ownerId">) => {
   try {
-    const userId = await SecureStore.getItemAsync('userId');
+    const userId = await SecureStore.getItemAsync("userId");
     if (!userId) {
-      return { success: false, message: 'Brak zalogowanego użytkownika.' };
+      return { success: false, message: "Brak zalogowanego użytkownika." };
     }
 
     const newPet: PetData = {
@@ -28,9 +28,9 @@ export const addPetHandler = async (petData: Omit<PetData, 'ownerId'>) => {
     };
 
     const response = await fetch(`${API_URL}:3000/pets`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(newPet),
     });
@@ -38,11 +38,10 @@ export const addPetHandler = async (petData: Omit<PetData, 'ownerId'>) => {
     if (response.ok) {
       return { success: true };
     } else {
-      return { success: false, message: 'Błąd serwera przy zapisie.' };
+      return { success: false, message: "Błąd serwera przy zapisie." };
     }
-
   } catch (error) {
     console.error(error);
-    return { success: false, message: 'Błąd połączenia.' };
+    return { success: false, message: "Błąd połączenia." };
   }
 };
