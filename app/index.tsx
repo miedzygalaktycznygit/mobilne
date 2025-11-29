@@ -13,27 +13,6 @@ const AuthScreen = () => {
   const [id, setId] = useState<string>('');
 
 
-  const createTestUser = async () => {
-    try {
-      const response = await fetch('http://192.168.0.95:3000/register', { 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: "nowy1@test.pl", 
-          password: "1234", 
-          role: "owner"
-        })
-      });
-      
-      const data = await response.json();
-      console.log("Stworzono usera:", data);
-      alert("Stworzono! Teraz sprawdź db.json i zaloguj się.");
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -88,7 +67,7 @@ const AuthScreen = () => {
           onPress={() => {}} 
           color="#6B7280"
         />
-        <Button title="STWÓRZ KONTO TESTOWE" onPress={createTestUser} color="red" />
+        
       </View>
     </ScrollView>
   );
