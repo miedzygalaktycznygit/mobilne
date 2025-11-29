@@ -27,7 +27,7 @@ export const addPetHandler = async (petData: Omit<PetData, 'ownerId'>) => {
       ownerId: parseInt(userId),
     };
 
-    const response = await fetch(`${API_URL}:3000/pets`, {
+    const response = await fetch(`${API_URL}/pets`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
