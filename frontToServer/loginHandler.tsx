@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Link, router, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { API_URL } from "@/globalIp";
 
 interface Form {
   email: string;
@@ -33,7 +34,7 @@ export default async function loginHandler({ email, password, role, id }: Form) 
     return;
   }
   try {
-    const response = await fetch("http://192.168.0.95:3000/login", {
+    const response = await fetch(`${API_URL}/login`, {
       method: "POST",
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({

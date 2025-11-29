@@ -1,5 +1,6 @@
 import { Alert, Platform } from "react-native";
 import { router } from "expo-router";
+import { API_URL } from "@/globalIp";
 
 interface RegisterForm {
   email: string;
@@ -23,7 +24,7 @@ export default async function registerHandler({email, password, role, id}: Regis
   }
 
   try {
-    const response = await fetch('http://192.168.0.95:3000/register',{
+    const response = await fetch(`${API_URL}/register`,{
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -42,7 +43,7 @@ export default async function registerHandler({email, password, role, id}: Regis
     }
 
     Alert.alert("Konto utworzone! Zaloguj się.");
-
+    return true;
   } catch (e) {
     console.error(e);
   }

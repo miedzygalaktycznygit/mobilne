@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
+import { API_URL } from "@/globalIp";
 
 interface PetData {
   ownerId: number;
@@ -26,7 +27,7 @@ export const addPetHandler = async (petData: Omit<PetData, 'ownerId'>) => {
       ownerId: parseInt(userId),
     };
 
-    const response = await fetch('http://192.168.0.95:3000/pets', {
+    const response = await fetch(`${API_URL}:3000/pets`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

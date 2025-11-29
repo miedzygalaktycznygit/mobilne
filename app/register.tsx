@@ -26,13 +26,18 @@ const RegisterScreen = () => {
   };
 
   const handleRegister = async () => {
-
-    await registerHandler({
+    const success = await registerHandler({
         email, 
         password, 
         role, 
         id
     });
+
+    if (success){
+      setEmail("");
+      setPassword("");
+      setId("");
+    }
   };
 
   return (

@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { Link, useRouter, useFocusEffect } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import { API_URL } from "@/globalIp";
 
 interface Pet {
   id: number;
@@ -25,7 +26,7 @@ const OwnerDashboardScreen = () => {
         return;
       }
 
-      const response = await fetch(`http://192.168.0.95:3000/pets?ownerId=${userId}`);
+      const response = await fetch(`${API_URL}/pets?ownerId=${userId}`);
       const data = await response.json();
       
       setPets(data);
