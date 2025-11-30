@@ -157,7 +157,7 @@ const AddEditPetScreen = () => {
           <Text style={{ fontSize: 30, color: "#9CA3AF" }}>+</Text>
         </TouchableOpacity>
 
-        <Text style={styles.label}>Imię *</Text>
+        <Text style={styles.label}>Imię<Text style={styles.mandatory}>*</Text></Text>
         <TextInput
           style={styles.input}
           placeholder="Np. Burek"
@@ -166,7 +166,7 @@ const AddEditPetScreen = () => {
           onChangeText={setName}
         />
 
-        <Text style={styles.label}>Gatunek *</Text>
+        <Text style={styles.label}>Gatunek<Text style={styles.mandatory}>*</Text></Text>
         <TextInput
           style={styles.input}
           placeholder="Np. Pies"
@@ -175,7 +175,7 @@ const AddEditPetScreen = () => {
           onChangeText={setSpecies}
         />
 
-        <Text style={styles.label}>Rasa *</Text>
+        <Text style={styles.label}>Rasa<Text style={styles.mandatory}>*</Text></Text>
         <TextInput
           style={styles.input}
           placeholder="Np. Mieszaniec"
@@ -184,7 +184,7 @@ const AddEditPetScreen = () => {
           onChangeText={setBreed}
         />
 
-        <Text style={styles.label}>Data urodzenia *</Text>
+        <Text style={styles.label}>Data urodzenia<Text style={styles.mandatory}>*</Text></Text>
         <TouchableOpacity
           style={styles.dateInput}
           onPress={() => setShowDatePicker(true)}
@@ -218,7 +218,7 @@ const AddEditPetScreen = () => {
           </View>
         )}
 
-        <Text style={styles.label}>Waga (kg) *</Text>
+        <Text style={styles.label}>Waga (kg)<Text style={styles.mandatory}>*</Text></Text>
         <TextInput
           style={styles.input}
           placeholder="Np. 15"
@@ -228,7 +228,7 @@ const AddEditPetScreen = () => {
           onChangeText={setWeight}
         />
 
-        <Text style={styles.label}>Numer czipa *</Text>
+        <Text style={styles.label}>Numer czipa<Text style={styles.mandatory}>*</Text></Text>
         <TextInput
           style={styles.input}
           placeholder="1234567890"
@@ -375,6 +375,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  mandatory: {
+    color: "#EF4444",
+  }
 });
 
 export default AddEditPetScreen;

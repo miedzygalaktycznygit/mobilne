@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams, useRouter, Stack, useFocusEffect } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { getPetDetailsHandler, PetDetails } from '@/frontToServer/getPetDetailsHandler';
+import { deletePetHandler } from '@/frontToServer/deletePetHandler';
 import { Feather } from '@expo/vector-icons';
 
 const PetProfileOwnerScreen = () => {
@@ -71,14 +72,57 @@ const PetProfileOwnerScreen = () => {
   });
 };
 
+const handleDeletePress = () => {
+    Alert.alert(
+      "Usuń zwierzę",
+      `Czy na pewno chcesz usunąć profil: ${pet?.name}? Tego nie da się cofnąć.`,
+      [
+        {
+          text: "Anuluj",
+          style: "cancel"
+        },
+        {
+          text: "Usuń",
+          style: "destructive",
+          onPress: performDelete
+        }
+      ]
+    );
+  };
+
+  const performDelete = async () => {
+    setLoading(true);
+    const result = await deletePetHandler(id as string);
+    setLoading(false);
+
+    if (result.success) {
+      Alert.alert("Sukces", "Zwierzę zostało usunięte.", [
+        { 
+          text: "OK", 
+          onPress: () => {
+            router.back(); 
+          } 
+        }
+      ]);
+    } else {
+      Alert.alert("Błąd", result.message || "Nie udało się usunąć.");
+    }
+  };
+
   return (
     <View style={{flex: 1}}>
     <Stack.Screen 
       options={{
         headerRight: () => (
-          <TouchableOpacity onPress={goToEdit} style={{ marginRight: 10 }}>
-            <Feather name="edit-2" size={24} color="#3B82F6" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 15, marginRight: 10 }}>
+              <TouchableOpacity onPress={handleDeletePress}>
+                <Feather name="trash-2" size={24} color="#EF4444" /> 
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={goToEdit}>
+                <Feather name="edit-2" size={24} color="#3B82F6" />
+              </TouchableOpacity>
+            </View>
         ),
       }} 
     />
