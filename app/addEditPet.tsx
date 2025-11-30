@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -11,13 +11,21 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams, Stack } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { addPetHandler } from "@/frontToServer/addPetHandler";
+import { getPetDetailsHandler } from '@/frontToServer/getPetDetailsHandler';
+import { updatePetHandler } from '@/frontToServer/updatePetHandler';
 
 const AddEditPetScreen = () => {
   const router = useRouter();
+  const { id } = useLocalSearchParams();
+  const isEditMode = !!id;
   const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(isEditMode);
+
+  const [existingOwnerId, setExistingOwnerId] = useState<number | null>(null);
+  const [existingUniqueId, setExistingUniqueId] = useState<string>('');
 
   const [name, setName] = useState("");
   const [species, setSpecies] = useState("");
@@ -30,6 +38,37 @@ const AddEditPetScreen = () => {
   const [notes, setNotes] = useState("");
 
   const PLACEHOLDER_COLOR = "#6B7280";
+
+  useEffect(() => {
+    if (isEditMode) {
+      loadPetData();
+    }
+  }, [id]);
+
+  const loadPetData = async () => {
+    const result = await getPetDetailsHandler(id as string);
+    if (result.success && result.data) {
+      const pet = result.data;
+      setName(pet.name);
+      setSpecies(pet.species);
+      setBreed(pet.breed);
+      setWeight(pet.weight.toString());
+      setChip(pet.chip);
+      setAllergies(pet.allergies);
+      setNotes(pet.notes);
+      setExistingOwnerId(pet.ownerId);
+      setExistingUniqueId(pet.uniqueId);
+
+      const [day, month, year] = pet.birthday.split('.');
+      if (day && month && year) {
+        setBirthday(new Date(parseInt(year), parseInt(month) - 1, parseInt(day)));
+      }
+    } else {
+      Alert.alert("Błąd", "Nie udało się pobrać danych do edycji.");
+      router.back();
+    }
+    setInitializing(false);
+  };
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("pl-PL");
@@ -57,29 +96,53 @@ const AddEditPetScreen = () => {
 
     setLoading(true);
 
-    const result = await addPetHandler({
-      name,
-      species,
-      breed,
-      birthday: formatDate(birthday),
-      weight: parseFloat(weight) || 0,
-      uniqueId: generateUniqueId(),
-      chip,
-      allergies,
-      notes,
-      photo: "",
-    });
+    if (isEditMode) {
+      const result = await updatePetHandler(id as string, {
+        ownerId: existingOwnerId!,
+        uniqueId: existingUniqueId,
+        name,
+        species,
+        breed,
+        birthday: formatDate(birthday),
+        weight: parseFloat(weight) || 0,
+        chip,
+        allergies,
+        notes,
+        photo: ''
+      });
 
-    setLoading(false);
+      if (result.success) {
+        Alert.alert('Sukces', 'Zaktualizowano dane!', [{ text: 'OK', onPress: () => router.back() }]);
+      } else {
+        Alert.alert('Błąd', result.message || 'Błąd aktualizacji.');
+      }
 
-    if (result.success) {
-      Alert.alert("Sukces", "Dodano nowego zwierzaka!", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
     } else {
-      Alert.alert("Błąd", result.message || "Wystąpił nieznany błąd.");
+      const result = await addPetHandler({
+        name,
+        species,
+        breed,
+        birthday: formatDate(birthday),
+        weight: parseFloat(weight) || 0,
+        uniqueId: generateUniqueId(),
+        chip,
+        allergies,
+        notes,
+        photo: ''
+      });
+
+      if (result.success) {
+        Alert.alert('Sukces', 'Dodano nowego zwierzaka!', [{ text: 'OK', onPress: () => router.back() }]);
+      } else {
+        Alert.alert('Błąd', result.message || 'Błąd zapisu.');
+      }
     }
+    setLoading(false);
   };
+
+  if (initializing) {
+    return <View style={styles.center}><ActivityIndicator size="large" color="#3B82F6" /></View>;
+  }
 
   return (
     <KeyboardAvoidingView
@@ -87,6 +150,7 @@ const AddEditPetScreen = () => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={100}
     >
+      <Stack.Screen options={{ title: isEditMode ? 'Edytuj Zwierzę' : 'Dodaj Zwierzę' }} />
       <ScrollView style={styles.container}>
         <TouchableOpacity style={styles.photoPicker}>
           <Text style={styles.photoPickerText}>Dotknij, aby dodać zdjęcie</Text>
@@ -215,6 +279,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#FFF",
+  },
+  center: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
   },
   photoPicker: {
     width: 150,

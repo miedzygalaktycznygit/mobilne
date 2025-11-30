@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -8,9 +8,10 @@ import {
   ActivityIndicator, 
   Alert
 } from "react-native";
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack, useFocusEffect } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { getPetDetailsHandler, PetDetails } from '@/frontToServer/getPetDetailsHandler';
+import { Feather } from '@expo/vector-icons';
 
 const PetProfileOwnerScreen = () => {
   const { id } = useLocalSearchParams();
@@ -19,11 +20,13 @@ const PetProfileOwnerScreen = () => {
   const [pet, setPet] = useState<PetDetails | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (id) {
-      loadPetData();
-    }
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (id) {
+        loadPetData();
+      }
+    }, [id])
+  );
 
   const loadPetData = async () => {
     setLoading(true);
@@ -60,7 +63,26 @@ const PetProfileOwnerScreen = () => {
       </View>
     );
   }
+
+  const goToEdit = () => {
+  router.push({
+    pathname: "/addEditPet",
+    params: { id: id } 
+  });
+};
+
   return (
+    <View style={{flex: 1}}>
+    <Stack.Screen 
+      options={{
+        headerRight: () => (
+          <TouchableOpacity onPress={goToEdit} style={{ marginRight: 10 }}>
+            <Feather name="edit-2" size={24} color="#3B82F6" />
+          </TouchableOpacity>
+        ),
+      }} 
+    />
+
     <ScrollView style={styles.container}>
       <View style={styles.idCard}>
         <Text style={styles.idLabel}>Unikalne ID Twojego Zwierzęcia:</Text>
@@ -114,6 +136,7 @@ const PetProfileOwnerScreen = () => {
         </View>
       </View>
     </ScrollView>
+    </View>
   );
 };
 
