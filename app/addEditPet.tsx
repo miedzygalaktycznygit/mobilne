@@ -14,8 +14,8 @@ import {
 import { useRouter, useLocalSearchParams, Stack } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { addPetHandler } from "@/frontToServer/addPetHandler";
-import { getPetDetailsHandler } from '@/frontToServer/getPetDetailsHandler';
-import { updatePetHandler } from '@/frontToServer/updatePetHandler';
+import { getPetDetailsHandler } from "@/frontToServer/getPetDetailsHandler";
+import { updatePetHandler } from "@/frontToServer/updatePetHandler";
 
 const AddEditPetScreen = () => {
   const router = useRouter();
@@ -25,7 +25,7 @@ const AddEditPetScreen = () => {
   const [initializing, setInitializing] = useState(isEditMode);
 
   const [existingOwnerId, setExistingOwnerId] = useState<number | null>(null);
-  const [existingUniqueId, setExistingUniqueId] = useState<string>('');
+  const [existingUniqueId, setExistingUniqueId] = useState<string>("");
 
   const [name, setName] = useState("");
   const [species, setSpecies] = useState("");
@@ -59,9 +59,11 @@ const AddEditPetScreen = () => {
       setExistingOwnerId(pet.ownerId);
       setExistingUniqueId(pet.uniqueId);
 
-      const [day, month, year] = pet.birthday.split('.');
+      const [day, month, year] = pet.birthday.split(".");
       if (day && month && year) {
-        setBirthday(new Date(parseInt(year), parseInt(month) - 1, parseInt(day)));
+        setBirthday(
+          new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+        );
       }
     } else {
       Alert.alert("Błąd", "Nie udało się pobrać danych do edycji.");
@@ -108,15 +110,16 @@ const AddEditPetScreen = () => {
         chip,
         allergies,
         notes,
-        photo: ''
+        photo: "",
       });
 
       if (result.success) {
-        Alert.alert('Sukces', 'Zaktualizowano dane!', [{ text: 'OK', onPress: () => router.back() }]);
+        Alert.alert("Sukces", "Zaktualizowano dane!", [
+          { text: "OK", onPress: () => router.back() },
+        ]);
       } else {
-        Alert.alert('Błąd', result.message || 'Błąd aktualizacji.');
+        Alert.alert("Błąd", result.message || "Błąd aktualizacji.");
       }
-
     } else {
       const result = await addPetHandler({
         name,
@@ -128,20 +131,26 @@ const AddEditPetScreen = () => {
         chip,
         allergies,
         notes,
-        photo: ''
+        photo: "",
       });
 
       if (result.success) {
-        Alert.alert('Sukces', 'Dodano nowego zwierzaka!', [{ text: 'OK', onPress: () => router.back() }]);
+        Alert.alert("Sukces", "Dodano nowego zwierzaka!", [
+          { text: "OK", onPress: () => router.back() },
+        ]);
       } else {
-        Alert.alert('Błąd', result.message || 'Błąd zapisu.');
+        Alert.alert("Błąd", result.message || "Błąd zapisu.");
       }
     }
     setLoading(false);
   };
 
   if (initializing) {
-    return <View style={styles.center}><ActivityIndicator size="large" color="#3B82F6" /></View>;
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+      </View>
+    );
   }
 
   return (
@@ -150,14 +159,18 @@ const AddEditPetScreen = () => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={100}
     >
-      <Stack.Screen options={{ title: isEditMode ? 'Edytuj Zwierzę' : 'Dodaj Zwierzę' }} />
+      <Stack.Screen
+        options={{ title: isEditMode ? "Edytuj Zwierzę" : "Dodaj Zwierzę" }}
+      />
       <ScrollView style={styles.container}>
         <TouchableOpacity style={styles.photoPicker}>
           <Text style={styles.photoPickerText}>Dotknij, aby dodać zdjęcie</Text>
           <Text style={{ fontSize: 30, color: "#9CA3AF" }}>+</Text>
         </TouchableOpacity>
 
-        <Text style={styles.label}>Imię<Text style={styles.mandatory}>*</Text></Text>
+        <Text style={styles.label}>
+          Imię<Text style={styles.mandatory}>*</Text>
+        </Text>
         <TextInput
           style={styles.input}
           placeholder="Np. Burek"
@@ -166,7 +179,9 @@ const AddEditPetScreen = () => {
           onChangeText={setName}
         />
 
-        <Text style={styles.label}>Gatunek<Text style={styles.mandatory}>*</Text></Text>
+        <Text style={styles.label}>
+          Gatunek<Text style={styles.mandatory}>*</Text>
+        </Text>
         <TextInput
           style={styles.input}
           placeholder="Np. Pies"
@@ -175,7 +190,9 @@ const AddEditPetScreen = () => {
           onChangeText={setSpecies}
         />
 
-        <Text style={styles.label}>Rasa<Text style={styles.mandatory}>*</Text></Text>
+        <Text style={styles.label}>
+          Rasa<Text style={styles.mandatory}>*</Text>
+        </Text>
         <TextInput
           style={styles.input}
           placeholder="Np. Mieszaniec"
@@ -184,7 +201,9 @@ const AddEditPetScreen = () => {
           onChangeText={setBreed}
         />
 
-        <Text style={styles.label}>Data urodzenia<Text style={styles.mandatory}>*</Text></Text>
+        <Text style={styles.label}>
+          Data urodzenia<Text style={styles.mandatory}>*</Text>
+        </Text>
         <TouchableOpacity
           style={styles.dateInput}
           onPress={() => setShowDatePicker(true)}
@@ -218,7 +237,9 @@ const AddEditPetScreen = () => {
           </View>
         )}
 
-        <Text style={styles.label}>Waga (kg)<Text style={styles.mandatory}>*</Text></Text>
+        <Text style={styles.label}>
+          Waga (kg)<Text style={styles.mandatory}>*</Text>
+        </Text>
         <TextInput
           style={styles.input}
           placeholder="Np. 15"
@@ -228,7 +249,9 @@ const AddEditPetScreen = () => {
           onChangeText={setWeight}
         />
 
-        <Text style={styles.label}>Numer czipa<Text style={styles.mandatory}>*</Text></Text>
+        <Text style={styles.label}>
+          Numer czipa<Text style={styles.mandatory}>*</Text>
+        </Text>
         <TextInput
           style={styles.input}
           placeholder="1234567890"
@@ -280,10 +303,10 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#FFF",
   },
-  center: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   photoPicker: {
     width: 150,
@@ -377,7 +400,7 @@ const styles = StyleSheet.create({
   },
   mandatory: {
     color: "#EF4444",
-  }
+  },
 });
 
 export default AddEditPetScreen;

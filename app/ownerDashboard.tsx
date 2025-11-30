@@ -10,6 +10,7 @@ import {
 import { Link, useRouter, useFocusEffect } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { API_URL } from "@/globalIp";
+import { getUserPetsHandler } from '@/frontToServer/getUserPetsHandler';
 
 interface Pet {
   id: number;
@@ -25,18 +26,24 @@ const OwnerDashboardScreen = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchMyPets = async () => {
+    setLoading(true);
+
     try {
       const userId = await SecureStore.getItemAsync("userId");
 
       if (!userId) {
         console.error("Brak zalogowanego użytkownika");
+        setLoading(false);
         return;
       }
 
-      const response = await fetch(`${API_URL}/pets?ownerId=${userId}`);
-      const data = await response.json();
+      const result = await getUserPetsHandler(userId);
 
-      setPets(data);
+      if (result.success) {
+        setPets(result.data);
+      } else {
+        console.error(result.message);
+      }
     } catch (error) {
       console.error("Błąd pobierania zwierząt:", error);
     } finally {

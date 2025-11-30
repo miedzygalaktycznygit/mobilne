@@ -5,19 +5,27 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator, 
-  Alert
+  ActivityIndicator,
+  Alert,
 } from "react-native";
-import { useLocalSearchParams, useRouter, Stack, useFocusEffect } from 'expo-router';
-import * as Clipboard from 'expo-clipboard';
-import { getPetDetailsHandler, PetDetails } from '@/frontToServer/getPetDetailsHandler';
-import { deletePetHandler } from '@/frontToServer/deletePetHandler';
-import { Feather } from '@expo/vector-icons';
+import {
+  useLocalSearchParams,
+  useRouter,
+  Stack,
+  useFocusEffect,
+} from "expo-router";
+import * as Clipboard from "expo-clipboard";
+import {
+  getPetDetailsHandler,
+  PetDetails,
+} from "@/frontToServer/getPetDetailsHandler";
+import { deletePetHandler } from "@/frontToServer/deletePetHandler";
+import { Feather } from "@expo/vector-icons";
 
 const PetProfileOwnerScreen = () => {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  
+
   const [pet, setPet] = useState<PetDetails | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,7 +40,7 @@ const PetProfileOwnerScreen = () => {
   const loadPetData = async () => {
     setLoading(true);
     const result = await getPetDetailsHandler(id);
-    
+
     if (result.success && result.data) {
       setPet(result.data);
     } else {
@@ -66,26 +74,26 @@ const PetProfileOwnerScreen = () => {
   }
 
   const goToEdit = () => {
-  router.push({
-    pathname: "/addEditPet",
-    params: { id: id } 
-  });
-};
+    router.push({
+      pathname: "/addEditPet",
+      params: { id: id },
+    });
+  };
 
-const handleDeletePress = () => {
+  const handleDeletePress = () => {
     Alert.alert(
       "Usuń zwierzę",
       `Czy na pewno chcesz usunąć profil: ${pet?.name}? Tego nie da się cofnąć.`,
       [
         {
           text: "Anuluj",
-          style: "cancel"
+          style: "cancel",
         },
         {
           text: "Usuń",
           style: "destructive",
-          onPress: performDelete
-        }
+          onPress: performDelete,
+        },
       ]
     );
   };
@@ -97,12 +105,12 @@ const handleDeletePress = () => {
 
     if (result.success) {
       Alert.alert("Sukces", "Zwierzę zostało usunięte.", [
-        { 
-          text: "OK", 
+        {
+          text: "OK",
           onPress: () => {
-            router.back(); 
-          } 
-        }
+            router.back();
+          },
+        },
       ]);
     } else {
       Alert.alert("Błąd", result.message || "Nie udało się usunąć.");
@@ -110,76 +118,83 @@ const handleDeletePress = () => {
   };
 
   return (
-    <View style={{flex: 1}}>
-    <Stack.Screen 
-      options={{
-        headerRight: () => (
-          <View style={{ flexDirection: 'row', gap: 15, marginRight: 10 }}>
+    <View style={{ flex: 1 }}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <View style={{ flexDirection: "row", gap: 15 }}>
               <TouchableOpacity onPress={handleDeletePress}>
-                <Feather name="trash-2" size={24} color="#EF4444" /> 
+                <Feather name="trash-2" size={24} color="#EF4444" />
               </TouchableOpacity>
 
               <TouchableOpacity onPress={goToEdit}>
                 <Feather name="edit-2" size={24} color="#3B82F6" />
               </TouchableOpacity>
             </View>
-        ),
-      }} 
-    />
+          ),
+        }}
+      />
 
-    <ScrollView style={styles.container}>
-      <View style={styles.idCard}>
-        <Text style={styles.idLabel}>Unikalne ID Twojego Zwierzęcia:</Text>
-        <Text style={styles.idText}>{pet.uniqueId}</Text>
-        <TouchableOpacity style={styles.copyButton} onPress={copyToClipboard}>
-          <Text style={styles.copyButtonText}>Kopiuj ID</Text>
-        </TouchableOpacity>
-        <Text style={styles.idDesc}>
-          Podaj ten kod weterynarzowi lub hotelowi.
-        </Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Dane Podstawowe</Text>
-        <Text style={styles.infoRow}>Imię: {pet.name}</Text>
-        <Text style={styles.infoRow}>Gatunek: {pet.species}</Text>
-        <Text style={styles.infoRow}>Rasa: {pet.breed}</Text>
-        <Text style={styles.infoRow}>Data ur.: {pet.birthday}</Text>
-        <Text style={styles.infoRow}>Waga: {pet.weight} kg</Text>
-        <Text style={styles.infoRow}>Czip: {pet.chip}</Text>
-        <Text style={styles.infoRow}>Alergie: {pet.allergies || "Brak"}</Text>
-        {pet.notes ? <><Text style={styles.infoRow}>Notatki:</Text><Text style={styles.infoRow}>{pet.notes}</Text></> : null}
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>
-          Historia Medyczna (Tylko do odczytu)
-        </Text>
-        <View style={styles.entry}>
-          <Text style={styles.entryDate}>01-11-2025</Text>
-          <Text style={styles.entryTitle}>
-            Szczepienie przeciw wściekliźnie
-          </Text>
-          <Text style={styles.entryDoctor}>dr. Jan Kowalski</Text>
-        </View>
-        <View style={styles.entry}>
-          <Text style={styles.entryDate}>15-10-2025</Text>
-          <Text style={styles.entryTitle}>Konsultacja - kulawizna</Text>
-          <Text style={styles.entryDoctor}>dr. Jan Kowalski</Text>
-        </View>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Pobyty w Hotelu (Tylko do odczytu)</Text>
-        <View style={styles.entry}>
-          <Text style={styles.entryDate}>10-09-2025 - 15-09-2025</Text>
-          <Text style={styles.entryTitle}>Pobyt w "Psi Raj"</Text>
-          <Text style={styles.entryDoctor}>
-            Notatka: Bardzo grzeczny, dobrze jadł.
+      <ScrollView style={styles.container}>
+        <View style={styles.idCard}>
+          <Text style={styles.idLabel}>Unikalne ID Twojego Zwierzęcia:</Text>
+          <Text style={styles.idText}>{pet.uniqueId}</Text>
+          <TouchableOpacity style={styles.copyButton} onPress={copyToClipboard}>
+            <Text style={styles.copyButtonText}>Kopiuj ID</Text>
+          </TouchableOpacity>
+          <Text style={styles.idDesc}>
+            Podaj ten kod weterynarzowi lub hotelowi.
           </Text>
         </View>
-      </View>
-    </ScrollView>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Dane Podstawowe</Text>
+          <Text style={styles.infoRow}>Imię: {pet.name}</Text>
+          <Text style={styles.infoRow}>Gatunek: {pet.species}</Text>
+          <Text style={styles.infoRow}>Rasa: {pet.breed}</Text>
+          <Text style={styles.infoRow}>Data ur.: {pet.birthday}</Text>
+          <Text style={styles.infoRow}>Waga: {pet.weight} kg</Text>
+          <Text style={styles.infoRow}>Czip: {pet.chip}</Text>
+          <Text style={styles.infoRow}>Alergie: {pet.allergies || "Brak"}</Text>
+          {pet.notes ? (
+            <>
+              <Text style={styles.infoRow}>Notatki:</Text>
+              <Text style={styles.infoRow}>{pet.notes}</Text>
+            </>
+          ) : null}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>
+            Historia Medyczna (Tylko do odczytu)
+          </Text>
+          <View style={styles.entry}>
+            <Text style={styles.entryDate}>01-11-2025</Text>
+            <Text style={styles.entryTitle}>
+              Szczepienie przeciw wściekliźnie
+            </Text>
+            <Text style={styles.entryDoctor}>dr. Jan Kowalski</Text>
+          </View>
+          <View style={styles.entry}>
+            <Text style={styles.entryDate}>15-10-2025</Text>
+            <Text style={styles.entryTitle}>Konsultacja - kulawizna</Text>
+            <Text style={styles.entryDoctor}>dr. Jan Kowalski</Text>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>
+            Pobyty w Hotelu (Tylko do odczytu)
+          </Text>
+          <View style={styles.entry}>
+            <Text style={styles.entryDate}>10-09-2025 - 15-09-2025</Text>
+            <Text style={styles.entryTitle}>Pobyt w "Psi Raj"</Text>
+            <Text style={styles.entryDoctor}>
+              Notatka: Bardzo grzeczny, dobrze jadł.
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -191,8 +206,8 @@ const styles = StyleSheet.create({
   },
   center: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   idCard: {
     backgroundColor: "#DBEAFE",
