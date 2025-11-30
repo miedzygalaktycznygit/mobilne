@@ -32,6 +32,16 @@ interface MedicalEntry {
   createdAt: string;
 }
 
+interface StayNote {
+  id: number;
+  petId: number;
+  hotelId: number;
+  checkInDate: string;
+  checkOutDate: string;
+  notes: string;
+  createdAt: string;
+}
+
 const PetProfileSpecialistScreen = () => {
   const router = useRouter(); 
 
@@ -41,6 +51,7 @@ const PetProfileSpecialistScreen = () => {
   const [loading, setLoading] = useState(true);
   const [pet, setPet] = useState<Pet | null>(null);
   const [medicalEntries, setMedicalEntries] = useState<MedicalEntry[]>([]);
+  const [stayNotes, setStayNotes] = useState<StayNote[]>([]);
 
   const loadMedicalEntries = useCallback(async () => {
     const idToFetch = Array.isArray(petId) ? petId[0] : petId;
@@ -61,6 +72,25 @@ const PetProfileSpecialistScreen = () => {
     }
   }, [petId]);
 
+  const loadStayNotes = useCallback(async () => {
+    const idToFetch = Array.isArray(petId) ? petId[0] : petId;
+    if (!idToFetch) return;
+
+    try {
+      const stayResponse = await fetch(`${API_URL}/stayNotes`);
+      if (stayResponse.ok) {
+        const allNotes: StayNote[] = await stayResponse.json();
+        // Filtruj notatki dla tego petId
+        const petNotes = allNotes.filter((note) => note.petId === parseInt(idToFetch as string));
+        // Sortuj od najnowszych
+        petNotes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setStayNotes(petNotes);
+      }
+    } catch (err) {
+      console.error("Błąd pobierania notatek z pobytu:", err);
+    }
+  }, [petId]);
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -78,8 +108,9 @@ const PetProfileSpecialistScreen = () => {
             Alert.alert("Nie udało się pobrać danych o zwierzaku.");
           }
 
-          // Pobierz wpisy medyczne
+          // Pobierz wpisy medyczne i notatki z pobytu
           await loadMedicalEntries();
+          await loadStayNotes();
         }
       } catch (e){
         console.error(e);
@@ -88,13 +119,14 @@ const PetProfileSpecialistScreen = () => {
       }
     };
     loadData();
-  }, [petId, loadMedicalEntries]);
+  }, [petId, loadMedicalEntries, loadStayNotes]);
 
   // Odśwież wpisy medyczne gdy ekran wejdzie w focus (po powrocie z addMedicalEntry)
   useFocusEffect(
     useCallback(() => {
       loadMedicalEntries();
-    }, [loadMedicalEntries])
+      loadStayNotes();
+    }, [loadMedicalEntries, loadStayNotes])
   );
 
   if (loading){
@@ -194,6 +226,25 @@ const PetProfileSpecialistScreen = () => {
                     <Text style={styles.entryValue}>{entry.medications}</Text>
                   </>
                 )}
+              </View>
+            ))
+          )}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Notatki z Pobytu ({stayNotes.length})</Text>
+          {stayNotes.length === 0 ? (
+            <Text style={{color: '#9CA3AF', fontStyle: 'italic'}}>
+              Brak notatek z pobytu.
+            </Text>
+          ) : (
+            stayNotes.map((note) => (
+              <View key={note.id} style={styles.stayNoteCard}>
+                <View style={styles.entryHeader}>
+                  <Text style={styles.entryDate}>{note.checkInDate} - {note.checkOutDate}</Text>
+                </View>
+                <Text style={styles.entryLabel}>Notatki:</Text>
+                <Text style={styles.entryValue}>{note.notes}</Text>
               </View>
             ))
           )}
@@ -362,6 +413,14 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginTop: 2,
     lineHeight: 20,
+  },
+  stayNoteCard: {
+    backgroundColor: '#F9FAFB',
+    borderLeftWidth: 4,
+    borderLeftColor: '#FB923C',
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 8,
   },
 });
 
