@@ -1,23 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router'; 
+import { findPetHandler } from '@/frontToServer/findPetHandler';
 
 const SpecialistDashboardScreen = () => {
-  const router = useRouter(); 
+
+  const [petId, setPetId] = useState('');
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Wyszukaj Pacjenta/Gościa</Text>
+      <Text style={styles.title}>Wyszukaj zwierzaka</Text>
       <Text style={styles.subtitle}>Wprowadź unikalne ID zwierzęcia podane przez właściciela.</Text>
       
       <TextInput 
         style={styles.input}
         placeholder="ABC-123-XYZ"
+        value={petId}
+        onChangeText={setPetId}
+        autoCapitalize='characters'
       />
       
       <TouchableOpacity 
-        style={styles.primaryButton}
-        onPress={() => router.push('/petProfileSpecialist' as any)} 
+        style={styles.primaryButton} 
+        onPress={() => findPetHandler(petId)}
       >
         <Text style={styles.primaryButtonText}>Wyszukaj</Text>
       </TouchableOpacity>

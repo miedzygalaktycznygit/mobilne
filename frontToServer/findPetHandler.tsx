@@ -30,22 +30,23 @@ export const findPetHandler = async (petId1: string) => {
       method: "GET",
       headers: { 'Content-Type': 'application/json' }
     });
-
-    const data1 = await response.json();
+    const data: Pet[] = await response.json();
 
     if (!response.ok){
-      Alert.alert("Błąd pobierania zwierzaka", data1);
+      const errorMessage = (data as any)?.message || "Wystąpił nieznany błąd";
+      Alert.alert("Błąd pobierania zwierzaka", errorMessage);
+      return;
     }
-
-    const data: Pet[] = await response.json();
 
     if (Array.isArray(data) && data.length > 0){
       const pet = data[0];
 
       router.push({
         pathname: '/petProfileSpecialist',
-        params: { petId: pet.id}
+        params: { petId: pet.id }
       } as any);
+    } else {
+      Alert.alert("Nie znaleziono", "Nie znaleziono zwierzaka o podanym ID.");
     }
 
   } catch (e) {
