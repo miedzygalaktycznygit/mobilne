@@ -1,19 +1,71 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator, 
+  Alert
 } from "react-native";
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
+import { getPetDetailsHandler, PetDetails } from '@/frontToServer/getPetDetailsHandler';
 
 const PetProfileOwnerScreen = () => {
+  const { id } = useLocalSearchParams();
+  const router = useRouter();
+  
+  const [pet, setPet] = useState<PetDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (id) {
+      loadPetData();
+    }
+  }, [id]);
+
+  const loadPetData = async () => {
+    setLoading(true);
+    const result = await getPetDetailsHandler(id);
+    
+    if (result.success && result.data) {
+      setPet(result.data);
+    } else {
+      Alert.alert("Błąd", result.message || "Wystąpił błąd");
+      router.back();
+    }
+    setLoading(false);
+  };
+
+  const copyToClipboard = async () => {
+    if (pet?.uniqueId) {
+      await Clipboard.setStringAsync(pet.uniqueId);
+      Alert.alert("Sukces", "Skopiowano ID do schowka");
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+      </View>
+    );
+  }
+
+  if (!pet) {
+    return (
+      <View style={styles.center}>
+        <Text>Nie znaleziono danych zwierzęcia.</Text>
+      </View>
+    );
+  }
   return (
     <ScrollView style={styles.container}>
       <View style={styles.idCard}>
         <Text style={styles.idLabel}>Unikalne ID Twojego Zwierzęcia:</Text>
-        <Text style={styles.idText}>ABC-123-XYZ</Text>
-        <TouchableOpacity style={styles.copyButton}>
+        <Text style={styles.idText}>{pet.uniqueId}</Text>
+        <TouchableOpacity style={styles.copyButton} onPress={copyToClipboard}>
           <Text style={styles.copyButtonText}>Kopiuj ID</Text>
         </TouchableOpacity>
         <Text style={styles.idDesc}>
@@ -23,10 +75,14 @@ const PetProfileOwnerScreen = () => {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Dane Podstawowe</Text>
-        <Text style={styles.infoRow}>Imię: Burek</Text>
-        <Text style={styles.infoRow}>Gatunek: Pies</Text>
-        <Text style={styles.infoRow}>Waga: 15 kg</Text>
-        <Text style={styles.infoRow}>Alergie: Kurczak</Text>
+        <Text style={styles.infoRow}>Imię: {pet.name}</Text>
+        <Text style={styles.infoRow}>Gatunek: {pet.species}</Text>
+        <Text style={styles.infoRow}>Rasa: {pet.breed}</Text>
+        <Text style={styles.infoRow}>Data ur.: {pet.birthday}</Text>
+        <Text style={styles.infoRow}>Waga: {pet.weight} kg</Text>
+        <Text style={styles.infoRow}>Czip: {pet.chip}</Text>
+        <Text style={styles.infoRow}>Alergie: {pet.allergies || "Brak"}</Text>
+        {pet.notes ? <><Text style={styles.infoRow}>Notatki:</Text><Text style={styles.infoRow}>{pet.notes}</Text></> : null}
       </View>
 
       <View style={styles.card}>
@@ -65,6 +121,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F3F4F6",
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   idCard: {
     backgroundColor: "#DBEAFE",

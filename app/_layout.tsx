@@ -65,7 +65,7 @@ export default function RootLayout() {
       />
       <Stack.Screen name="addEditPet" options={{ title: "Dodaj Zwierzę" }} />
       <Stack.Screen
-        name="petProfileOwner"
+        name="petProfileOwner/[id]"
         options={{ title: "Profil Zwierzęcia" }}
       />
       <Stack.Screen

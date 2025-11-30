@@ -67,7 +67,7 @@ const OwnerDashboardScreen = () => {
               </Text>
             ) : (
               pets.map((pet) => (
-                <Link key={pet.id} href={"/petProfileOwner" as any} asChild>
+                <Link key={pet.id} href={`/petProfileOwner/${pet.id}` as any} asChild>
                   <TouchableOpacity style={styles.petCard}>
                     <View style={styles.petAvatar} />
                     <View>
