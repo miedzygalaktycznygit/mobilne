@@ -1,7 +1,14 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { Link, useRouter, useFocusEffect } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
+import React, { useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
+import { Link, useRouter, useFocusEffect } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { API_URL } from "@/globalIp";
 
 interface Pet {
@@ -19,8 +26,8 @@ const OwnerDashboardScreen = () => {
 
   const fetchMyPets = async () => {
     try {
-      const userId = await SecureStore.getItemAsync('userId');
-      
+      const userId = await SecureStore.getItemAsync("userId");
+
       if (!userId) {
         console.error("Brak zalogowanego użytkownika");
         return;
@@ -28,7 +35,7 @@ const OwnerDashboardScreen = () => {
 
       const response = await fetch(`${API_URL}/pets?ownerId=${userId}`);
       const data = await response.json();
-      
+
       setPets(data);
     } catch (error) {
       console.error("Błąd pobierania zwierząt:", error);
@@ -47,13 +54,15 @@ const OwnerDashboardScreen = () => {
     <View style={styles.container}>
       <ScrollView>
         <Text style={styles.subtitle}>Twoje zwierzęta:</Text>
-        
+
         {loading ? (
           <ActivityIndicator size="large" color="#3B82F6" />
         ) : (
           <>
             {pets.length === 0 ? (
-              <Text style={{textAlign: 'center', color: '#666', marginTop: 20}}>
+              <Text
+                style={{ textAlign: "center", color: "#666", marginTop: 20 }}
+              >
                 Nie masz jeszcze dodanych zwierząt.
               </Text>
             ) : (
@@ -63,7 +72,9 @@ const OwnerDashboardScreen = () => {
                     <View style={styles.petAvatar} />
                     <View>
                       <Text style={styles.petName}>{pet.name}</Text>
-                      <Text style={styles.petSpecies}>{pet.species}, {pet.breed}</Text>
+                      <Text style={styles.petSpecies}>
+                        {pet.species}, {pet.breed}
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 </Link>
@@ -73,7 +84,6 @@ const OwnerDashboardScreen = () => {
         )}
       </ScrollView>
 
-      
       <Link href={"/addEditPet" as any} asChild>
         <TouchableOpacity style={styles.fab}>
           <Text style={styles.fabText}>+</Text>
@@ -83,28 +93,27 @@ const OwnerDashboardScreen = () => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
   },
   subtitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
+    fontWeight: "600",
+    color: "#1F2937",
     padding: 20,
   },
   petCard: {
-    backgroundColor: '#FFF',
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: "#FFF",
+    flexDirection: "row",
+    alignItems: "center",
     padding: 15,
     marginHorizontal: 20,
     marginBottom: 15,
     borderRadius: 12,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -113,33 +122,33 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#D1D5DB',
+    backgroundColor: "#D1D5DB",
     marginRight: 15,
   },
   petName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontWeight: "bold",
+    color: "#111827",
   },
   petSpecies: {
     fontSize: 14,
-    color: '#6B7280',
+    color: "#6B7280",
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 30,
     right: 30,
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#FB923C', // Akcentowy kolor
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#FB923C", // Akcentowy kolor
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 8,
   },
   fabText: {
     fontSize: 30,
-    color: '#FFF',
+    color: "#FFF",
     lineHeight: 30, // Dla idealnego wyśrodkowania "+"
   },
 });
