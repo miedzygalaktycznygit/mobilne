@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router'; 
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'; 
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from "@/globalIp";
 
@@ -19,6 +19,19 @@ interface Pet {
   notes?: string;
 }
 
+interface MedicalEntry {
+  id: number;
+  petId: number;
+  vetId: number;
+  visitDate: string;
+  visitType: string;
+  diagnosis: string;
+  procedures: string;
+  recommendations: string;
+  medications: string;
+  createdAt: string;
+}
+
 const PetProfileSpecialistScreen = () => {
   const router = useRouter(); 
 
@@ -27,6 +40,26 @@ const PetProfileSpecialistScreen = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [pet, setPet] = useState<Pet | null>(null);
+  const [medicalEntries, setMedicalEntries] = useState<MedicalEntry[]>([]);
+
+  const loadMedicalEntries = useCallback(async () => {
+    const idToFetch = Array.isArray(petId) ? petId[0] : petId;
+    if (!idToFetch) return;
+
+    try {
+      const medicalResponse = await fetch(`${API_URL}/medicalEntries`);
+      if (medicalResponse.ok) {
+        const allEntries: MedicalEntry[] = await medicalResponse.json();
+        // Filtruj wpisy dla tego petId
+        const petEntries = allEntries.filter((entry) => entry.petId === parseInt(idToFetch as string));
+        // Sortuj od najnowszych
+        petEntries.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setMedicalEntries(petEntries);
+      }
+    } catch (err) {
+      console.error("Błąd pobierania wpisów medycznych:", err);
+    }
+  }, [petId]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -44,6 +77,9 @@ const PetProfileSpecialistScreen = () => {
           } else {
             Alert.alert("Nie udało się pobrać danych o zwierzaku.");
           }
+
+          // Pobierz wpisy medyczne
+          await loadMedicalEntries();
         }
       } catch (e){
         console.error(e);
@@ -52,7 +88,14 @@ const PetProfileSpecialistScreen = () => {
       }
     };
     loadData();
-  }, [petId]);
+  }, [petId, loadMedicalEntries]);
+
+  // Odśwież wpisy medyczne gdy ekran wejdzie w focus (po powrocie z addMedicalEntry)
+  useFocusEffect(
+    useCallback(() => {
+      loadMedicalEntries();
+    }, [loadMedicalEntries])
+  );
 
   if (loading){
     return <View style={styles.center}><ActivityIndicator size="large" color="#3B82F6" /></View>;
@@ -116,10 +159,44 @@ const PetProfileSpecialistScreen = () => {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Ostatnie wpisy</Text>
-          <Text style={{color: '#9CA3AF', fontStyle: 'italic'}}>
-            Historia wizyt zostanie pobrana z oddzielnej tabeli w przyszłości.
-          </Text>
+          <Text style={styles.cardTitle}>Wpisy Medyczne ({medicalEntries.length})</Text>
+          {medicalEntries.length === 0 ? (
+            <Text style={{color: '#9CA3AF', fontStyle: 'italic'}}>
+              Brak wpisów medycznych.
+            </Text>
+          ) : (
+            medicalEntries.map((entry) => (
+              <View key={entry.id} style={styles.medicalEntryCard}>
+                <View style={styles.entryHeader}>
+                  <Text style={styles.entryDate}>{entry.visitDate}</Text>
+                  <Text style={styles.entryType}>{entry.visitType}</Text>
+                </View>
+                <Text style={styles.entryLabel}>Diagnoza:</Text>
+                <Text style={styles.entryValue}>{entry.diagnosis}</Text>
+                
+                {entry.procedures && entry.procedures.trim().length > 0 && (
+                  <>
+                    <Text style={styles.entryLabel}>Procedury:</Text>
+                    <Text style={styles.entryValue}>{entry.procedures}</Text>
+                  </>
+                )}
+                
+                {entry.recommendations && entry.recommendations.trim().length > 0 && (
+                  <>
+                    <Text style={styles.entryLabel}>Zalecenia:</Text>
+                    <Text style={styles.entryValue}>{entry.recommendations}</Text>
+                  </>
+                )}
+                
+                {entry.medications && entry.medications.trim().length > 0 && (
+                  <>
+                    <Text style={styles.entryLabel}>Leki:</Text>
+                    <Text style={styles.entryValue}>{entry.medications}</Text>
+                  </>
+                )}
+              </View>
+            ))
+          )}
         </View>
       
       </ScrollView>
@@ -246,6 +323,45 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  medicalEntryCard: {
+    backgroundColor: '#F9FAFB',
+    borderLeftWidth: 4,
+    borderLeftColor: '#3B82F6',
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 8,
+  },
+  entryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  entryDate: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3B82F6',
+  },
+  entryType: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#10B981',
+    backgroundColor: '#F0FDF4',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  entryLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#4B5563',
+    marginTop: 6,
+  },
+  entryValue: {
+    fontSize: 14,
+    color: '#111827',
+    marginTop: 2,
+    lineHeight: 20,
   },
 });
 
