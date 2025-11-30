@@ -62,12 +62,6 @@ const AuthScreen = () => {
           </TouchableOpacity>
         </Link>
         
-        <Button 
-          title="Nie pamiętasz hasła?" 
-          onPress={() => {}} 
-          color="#6B7280"
-        />
-        
       </View>
     </ScrollView>
   );

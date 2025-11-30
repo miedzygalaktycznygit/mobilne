@@ -45,6 +45,13 @@ export default async function loginHandler({ email, password, role, id }: Form) 
 
     const data = await response.json();
 
+    await SecureStore.setItemAsync('userToken', data.accessToken);
+    await SecureStore.setItemAsync('userRole', role);
+
+    if (data.user && data.user.id){
+      await SecureStore.setItemAsync('userId', data.user.id.toString());
+    }
+
     if (!response.ok){
       Alert.alert("Błąd logowania", data);
       return

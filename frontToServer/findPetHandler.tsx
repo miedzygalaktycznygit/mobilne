@@ -1,0 +1,54 @@
+import { Alert } from 'react-native';
+import { router } from 'expo-router';
+import { API_URL } from "@/globalIp";
+
+interface Pet {
+  id: number;
+  ownerId: number;
+  name: string;
+  species: string;
+  breed: string;
+  uniqueId: string;
+  photo: string;
+  weight: number;
+  birthday: string;
+  chip?: string;
+  allergies?: string;
+  notes?: string;
+}
+
+export const findPetHandler = async (petId1: string) => {
+  const petId = petId1.trim();
+
+  if (!petId){
+    Alert.alert("ID zwierzaka nie zostało poprawnie wprowadzone.");
+    return
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/pets?uniqueId=${petId}`,{
+      method: "GET",
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const data1 = await response.json();
+
+    if (!response.ok){
+      Alert.alert("Błąd pobierania zwierzaka", data1);
+    }
+
+    const data: Pet[] = await response.json();
+
+    if (Array.isArray(data) && data.length > 0){
+      const pet = data[0];
+
+      router.push({
+        pathname: '/petProfileSpecialist',
+        params: { petId: pet.id}
+      } as any);
+    }
+
+  } catch (e) {
+    console.error(e);
+  }
+}
