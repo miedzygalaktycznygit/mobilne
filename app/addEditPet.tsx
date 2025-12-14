@@ -79,11 +79,10 @@ const AddEditPetScreen = () => {
     setInitializing(false);
   };
 
-  const takePhoto = async () => {
+  const pickFromCamera = async () => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-
     if (permissionResult.granted === false) {
-      Alert.alert("Brak uprawnień", "Musisz zezwolić na dostęp do aparatu.");
+      Alert.alert("Brak uprawnień", "Wymagany dostęp do aparatu.");
       return;
     }
 
@@ -95,10 +94,53 @@ const AddEditPetScreen = () => {
       base64: true,
     });
 
+    handleImageResult(result);
+  };
+
+  const pickFromGallery = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert("Brak uprawnień", "Wymagany dostęp do galerii zdjęć.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.3,
+      base64: true,
+    });
+
+    handleImageResult(result);
+  };
+
+  const handleImageResult = (result: ImagePicker.ImagePickerResult) => {
     if (!result.canceled && result.assets && result.assets[0].base64) {
       const base64Img = `data:image/jpeg;base64,${result.assets[0].base64}`;
       setPhoto(base64Img);
     }
+  };
+
+  const showPhotoOptionAlert = () => {
+    Alert.alert(
+      "Dodaj zdjęcie",
+      "Wybierz źródło zdjęcia",
+      [
+        {
+          text: "Anuluj",
+          style: "cancel"
+        },
+        {
+          text: "Zrób zdjęcie",
+          onPress: pickFromCamera
+        },
+        {
+          text: "Wybierz z galerii",
+          onPress: pickFromGallery
+        }
+      ]
+    );
   };
 
   const formatDate = (date: Date) => {
@@ -186,7 +228,7 @@ const AddEditPetScreen = () => {
       <ScrollView style={styles.container}>
         <TouchableOpacity 
           style={[styles.photoPicker, photo ? styles.photoPickerHasImage : null]} 
-          onPress={takePhoto}
+          onPress={showPhotoOptionAlert}
         >
           {photo ? (
             <Image source={{ uri: photo }} style={styles.img} />
