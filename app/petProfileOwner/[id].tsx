@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
 import {
   useLocalSearchParams,
@@ -136,6 +137,23 @@ const PetProfileOwnerScreen = () => {
       />
 
       <ScrollView style={styles.container}>
+        <View style={styles.headerContainer}>
+          {pet.photo ? (
+            <Image source={{ uri: pet.photo }} style={styles.profileImage} />
+          ) : (
+            <View style={[styles.profileImage, styles.placeholderImage]}>
+              <Text style={styles.avatarLetter}>
+                {pet.name.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+          )}
+
+          <Text style={styles.headerName}>{pet.name}</Text>
+          <Text style={styles.headerSpecies}>
+            {pet.species} {pet.breed ? `• ${pet.breed}` : ""}
+          </Text>
+        </View>
+
         <View style={styles.idCard}>
           <Text style={styles.idLabel}>Unikalne ID Twojego Zwierzęcia:</Text>
           <Text style={styles.idText}>{pet.uniqueId}</Text>
@@ -148,10 +166,7 @@ const PetProfileOwnerScreen = () => {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Dane Podstawowe</Text>
-          <Text style={styles.infoRow}>Imię: {pet.name}</Text>
-          <Text style={styles.infoRow}>Gatunek: {pet.species}</Text>
-          <Text style={styles.infoRow}>Rasa: {pet.breed}</Text>
+          <Text style={styles.cardTitle}>Szczegółowe Dane</Text>
           <Text style={styles.infoRow}>Data ur.: {pet.birthday}</Text>
           <Text style={styles.infoRow}>Waga: {pet.weight} kg</Text>
           <Text style={styles.infoRow}>Czip: {pet.chip}</Text>
@@ -208,6 +223,42 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  headerContainer: {
+    alignItems: "center",
+    paddingVertical: 30,
+    backgroundColor: "#FFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  profileImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    borderWidth: 4,
+    borderColor: "#F3F4F6",
+    resizeMode: "cover",
+    marginBottom: 15,
+  },
+  placeholderImage: {
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerName: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#111827",
+    marginBottom: 5,
+  },
+  headerSpecies: {
+    fontSize: 16,
+    color: "#6B7280",
+  },
+  avatarLetter: {
+    fontSize: 50,
+    fontWeight: "bold",
+    color: "#FFF",
   },
   idCard: {
     backgroundColor: "#DBEAFE",
