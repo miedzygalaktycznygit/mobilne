@@ -96,13 +96,13 @@ const AuthScreen = () => {
       
       <Text style={styles.label}>Wybierz typ konta:</Text>
       <View style={styles.roleSelector}>
-        <TouchableOpacity style={[styles.roleButton, styles.roleActive]} onPress = {() => setRole('owner')}>
+        <TouchableOpacity style={[styles.roleButton, role === 'owner' && styles.roleActive]} onPress={() => setRole('owner')}>
           <Text style={styles.roleText}>Właściciel</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.roleButton} onPress={() => setRole('vet')}>
+        <TouchableOpacity style={[styles.roleButton, role === 'vet' && styles.roleActive]} onPress={() => setRole('vet')}>
           <Text style={styles.roleText}>Weterynarz</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.roleButton} onPress={() => setRole('hotel')}>
+        <TouchableOpacity style={[styles.roleButton, role === 'hotel' && styles.roleActive]} onPress={() => setRole('hotel')}>
           <Text style={styles.roleText}>Hotel</Text>
         </TouchableOpacity>
       </View>
