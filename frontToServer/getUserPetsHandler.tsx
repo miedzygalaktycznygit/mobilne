@@ -7,6 +7,7 @@ interface Pet {
   species: string;
   breed: string;
   uniqueId: string;
+  photo: string;
 }
 
 interface Result {

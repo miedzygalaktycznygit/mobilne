@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Image
 } from "react-native";
 import { Link, useRouter, useFocusEffect } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -19,6 +20,7 @@ interface Pet {
   species: string;
   breed: string;
   uniqueId: string;
+  photo: string;
 }
 
 const OwnerDashboardScreen = () => {
@@ -76,7 +78,18 @@ const OwnerDashboardScreen = () => {
               pets.map((pet) => (
                 <Link key={pet.id} href={`/petProfileOwner/${pet.id}` as any} asChild>
                   <TouchableOpacity style={styles.petCard}>
-                    <View style={styles.petAvatar} />
+                    {pet.photo ? (
+                      <Image 
+                        source={{ uri: pet.photo }} 
+                        style={styles.petAvatar} 
+                      />
+                    ) : (
+                      <View style={[styles.petAvatar, styles.petAvatarPlaceholder]}>
+                         <Text style={styles.avatarLetter}>
+                           {pet.name.charAt(0).toUpperCase()}
+                         </Text>
+                      </View>
+                    )}
                     <View>
                       <Text style={styles.petName}>{pet.name}</Text>
                       <Text style={styles.petSpecies}>
@@ -129,8 +142,18 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#D1D5DB",
     marginRight: 15,
+    resizeMode: 'cover',
+  },
+  petAvatarPlaceholder: {
+    backgroundColor: '#D1D5DB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarLetter: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFF',
   },
   petName: {
     fontSize: 18,
