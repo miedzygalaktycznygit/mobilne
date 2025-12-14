@@ -39,7 +39,14 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Aplikacja potrzebuje dostępu do aparatu, aby zrobić zdjęcie zwierzaka.",
+          "photosPermission": "Aplikacja potrzebuje dostępu do galerii, aby wybrać zdjęcie zwierzaka."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

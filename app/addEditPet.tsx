@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,9 +10,11 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Image
 } from "react-native";
-import { useRouter, useLocalSearchParams, Stack } from "expo-router";
+import { useRouter, useLocalSearchParams, Stack, useFocusEffect } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as ImagePicker from 'expo-image-picker';
 import { addPetHandler } from "@/frontToServer/addPetHandler";
 import { getPetDetailsHandler } from "@/frontToServer/getPetDetailsHandler";
 import { updatePetHandler } from "@/frontToServer/updatePetHandler";
@@ -36,16 +38,20 @@ const AddEditPetScreen = () => {
   const [chip, setChip] = useState("");
   const [allergies, setAllergies] = useState("");
   const [notes, setNotes] = useState("");
+  const [photo, setPhoto] = useState('');
 
   const PLACEHOLDER_COLOR = "#6B7280";
 
-  useEffect(() => {
-    if (isEditMode) {
-      loadPetData();
-    }
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (isEditMode) {
+        loadPetData();
+      }
+    }, [id])
+  );
 
   const loadPetData = async () => {
+    setInitializing(true);
     const result = await getPetDetailsHandler(id as string);
     if (result.success && result.data) {
       const pet = result.data;
@@ -58,6 +64,7 @@ const AddEditPetScreen = () => {
       setNotes(pet.notes);
       setExistingOwnerId(pet.ownerId);
       setExistingUniqueId(pet.uniqueId);
+      setPhoto(pet.photo || '');
 
       const [day, month, year] = pet.birthday.split(".");
       if (day && month && year) {
@@ -70,6 +77,28 @@ const AddEditPetScreen = () => {
       router.back();
     }
     setInitializing(false);
+  };
+
+  const takePhoto = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      Alert.alert("Brak uprawnień", "Musisz zezwolić na dostęp do aparatu.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.3,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets && result.assets[0].base64) {
+      const base64Img = `data:image/jpeg;base64,${result.assets[0].base64}`;
+      setPhoto(base64Img);
+    }
   };
 
   const formatDate = (date: Date) => {
@@ -98,51 +127,43 @@ const AddEditPetScreen = () => {
 
     setLoading(true);
 
+    const commonData = {
+      name,
+      species,
+      breed,
+      birthday: formatDate(birthday),
+      weight: parseFloat(weight) || 0,
+      chip,
+      allergies,
+      notes,
+      photo: photo
+    };
+
+    let result;
     if (isEditMode) {
-      const result = await updatePetHandler(id as string, {
+      result = await updatePetHandler(id as string, {
+        ...commonData,
         ownerId: existingOwnerId!,
         uniqueId: existingUniqueId,
-        name,
-        species,
-        breed,
-        birthday: formatDate(birthday),
-        weight: parseFloat(weight) || 0,
-        chip,
-        allergies,
-        notes,
-        photo: "",
       });
-
-      if (result.success) {
-        Alert.alert("Sukces", "Zaktualizowano dane!", [
-          { text: "OK", onPress: () => router.back() },
-        ]);
-      } else {
-        Alert.alert("Błąd", result.message || "Błąd aktualizacji.");
-      }
     } else {
-      const result = await addPetHandler({
-        name,
-        species,
-        breed,
-        birthday: formatDate(birthday),
-        weight: parseFloat(weight) || 0,
+      result = await addPetHandler({
+        ...commonData,
         uniqueId: generateUniqueId(),
-        chip,
-        allergies,
-        notes,
-        photo: "",
       });
-
-      if (result.success) {
-        Alert.alert("Sukces", "Dodano nowego zwierzaka!", [
-          { text: "OK", onPress: () => router.back() },
-        ]);
-      } else {
-        Alert.alert("Błąd", result.message || "Błąd zapisu.");
-      }
     }
+
     setLoading(false);
+
+    if (result.success) {
+      Alert.alert(
+        'Sukces', 
+        isEditMode ? 'Zaktualizowano dane!' : 'Dodano nowego zwierzaka!', 
+        [{ text: 'OK', onPress: () => router.back() }]
+      );
+    } else {
+      Alert.alert('Błąd', result.message || 'Błąd zapisu.');
+    }
   };
 
   if (initializing) {
@@ -163,9 +184,18 @@ const AddEditPetScreen = () => {
         options={{ title: isEditMode ? "Edytuj Zwierzę" : "Dodaj Zwierzę" }}
       />
       <ScrollView style={styles.container}>
-        <TouchableOpacity style={styles.photoPicker}>
-          <Text style={styles.photoPickerText}>Dotknij, aby dodać zdjęcie</Text>
-          <Text style={{ fontSize: 30, color: "#9CA3AF" }}>+</Text>
+        <TouchableOpacity 
+          style={[styles.photoPicker, photo ? styles.photoPickerHasImage : null]} 
+          onPress={takePhoto}
+        >
+          {photo ? (
+            <Image source={{ uri: photo }} style={styles.img} />
+          ) : (
+            <>
+              <Text style={styles.photoPickerText}>Dotknij, aby dodać zdjęcie</Text>
+              <Text style={{ fontSize: 30, color: "#9CA3AF" }}>+</Text>
+            </>
+          )}
         </TouchableOpacity>
 
         <Text style={styles.label}>
@@ -320,6 +350,17 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#D1D5DB",
     borderStyle: "dashed",
+    overflow: 'hidden',
+  },
+  photoPickerHasImage: {
+    borderStyle: 'solid',
+    borderWidth: 0,
+  },
+  img: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 75,
+    resizeMode: 'cover',
   },
   photoPickerText: {
     color: "#6B7280",
