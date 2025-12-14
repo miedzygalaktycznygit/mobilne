@@ -22,6 +22,30 @@ import {
 } from "@/frontToServer/getPetDetailsHandler";
 import { deletePetHandler } from "@/frontToServer/deletePetHandler";
 import { Feather } from "@expo/vector-icons";
+import { API_URL } from "@/globalIp";
+
+interface MedicalEntry {
+  id: number;
+  petId: number;
+  vetId: number;
+  visitDate: string;
+  visitType: string;
+  diagnosis: string;
+  procedures: string;
+  recommendations: string;
+  medications: string;
+  createdAt: string;
+}
+
+interface StayNote {
+  id: number;
+  petId: number;
+  hotelId: number;
+  checkInDate: string;
+  checkOutDate: string;
+  notes: string;
+  createdAt: string;
+}
 
 const PetProfileOwnerScreen = () => {
   const { id } = useLocalSearchParams();
@@ -29,6 +53,8 @@ const PetProfileOwnerScreen = () => {
 
   const [pet, setPet] = useState<PetDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [medicalEntries, setMedicalEntries] = useState<MedicalEntry[]>([]);
+  const [stayNotes, setStayNotes] = useState<StayNote[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -44,11 +70,52 @@ const PetProfileOwnerScreen = () => {
 
     if (result.success && result.data) {
       setPet(result.data);
+      // Pobierz historię medyczną i notatki z pobytu
+      await loadMedicalHistory(id);
+      await loadStayHistory(id);
     } else {
       Alert.alert("Błąd", result.message || "Wystąpił błąd");
       router.back();
     }
     setLoading(false);
+  };
+
+  const loadMedicalHistory = async (petId: any) => {
+    try {
+      const response = await fetch(`${API_URL}/medicalEntries`);
+      if (response.ok) {
+        const allEntries: MedicalEntry[] = await response.json();
+        const petEntries = allEntries.filter(
+          (entry) => entry.petId === parseInt(petId as string)
+        );
+        petEntries.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setMedicalEntries(petEntries);
+      }
+    } catch (error) {
+      console.error("Błąd pobierania historii medycznej:", error);
+    }
+  };
+
+  const loadStayHistory = async (petId: any) => {
+    try {
+      const response = await fetch(`${API_URL}/stayNotes`);
+      if (response.ok) {
+        const allNotes: StayNote[] = await response.json();
+        const petNotes = allNotes.filter(
+          (note) => note.petId === parseInt(petId as string)
+        );
+        petNotes.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setStayNotes(petNotes);
+      }
+    } catch (error) {
+      console.error("Błąd pobierania notatek z pobytu:", error);
+    }
   };
 
   const copyToClipboard = async () => {
@@ -181,33 +248,48 @@ const PetProfileOwnerScreen = () => {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
-            Historia Medyczna (Tylko do odczytu)
+            Historia Medyczna ({medicalEntries.length})
           </Text>
-          <View style={styles.entry}>
-            <Text style={styles.entryDate}>01-11-2025</Text>
-            <Text style={styles.entryTitle}>
-              Szczepienie przeciw wściekliźnie
+          {medicalEntries.length === 0 ? (
+            <Text style={styles.emptyText}>
+              Brak wpisów medycznych. Wpisy pojawią się po wizycie u weterynarza.
             </Text>
-            <Text style={styles.entryDoctor}>dr. Jan Kowalski</Text>
-          </View>
-          <View style={styles.entry}>
-            <Text style={styles.entryDate}>15-10-2025</Text>
-            <Text style={styles.entryTitle}>Konsultacja - kulawizna</Text>
-            <Text style={styles.entryDoctor}>dr. Jan Kowalski</Text>
-          </View>
+          ) : (
+            medicalEntries.map((entry) => (
+              <View key={entry.id} style={styles.entry}>
+                <Text style={styles.entryDate}>{entry.visitDate}</Text>
+                <Text style={styles.entryTitle}>{entry.visitType}</Text>
+                <Text style={styles.entryDoctor}>Diagnoza: {entry.diagnosis}</Text>
+                {entry.procedures && entry.procedures.trim().length > 0 && (
+                  <Text style={styles.entryDoctor}>Procedury: {entry.procedures}</Text>
+                )}
+                {entry.medications && entry.medications.trim().length > 0 && (
+                  <Text style={styles.entryDoctor}>Leki: {entry.medications}</Text>
+                )}
+              </View>
+            ))
+          )}
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
-            Pobyty w Hotelu (Tylko do odczytu)
+            Pobyty w Hotelu ({stayNotes.length})
           </Text>
-          <View style={styles.entry}>
-            <Text style={styles.entryDate}>10-09-2025 - 15-09-2025</Text>
-            <Text style={styles.entryTitle}>Pobyt w "Psi Raj"</Text>
-            <Text style={styles.entryDoctor}>
-              Notatka: Bardzo grzeczny, dobrze jadł.
+          {stayNotes.length === 0 ? (
+            <Text style={styles.emptyText}>
+              Brak notatek z pobytu. Notatki pojawią się po pobycie w hotelu.
             </Text>
-          </View>
+          ) : (
+            stayNotes.map((note) => (
+              <View key={note.id} style={styles.entry}>
+                <Text style={styles.entryDate}>
+                  {note.checkInDate} - {note.checkOutDate}
+                </Text>
+                <Text style={styles.entryTitle}>Pobyt w hotelu</Text>
+                <Text style={styles.entryDoctor}>Notatka: {note.notes}</Text>
+              </View>
+            ))
+          )}
         </View>
       </ScrollView>
     </View>
@@ -332,6 +414,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#374151",
     fontStyle: "italic",
+  },
+  emptyText: {
+    fontSize: 14,
+    color: "#9CA3AF",
+    fontStyle: "italic",
+    textAlign: "center",
+    paddingVertical: 15,
   },
 });
 
