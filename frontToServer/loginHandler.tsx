@@ -20,7 +20,7 @@ interface Form {
   id: string;
 }
 
-export default async function loginHandler({ email, password, role, id }: Form) {
+export default async function loginHandler({ email, password, role, id }: Form, onLoginSuccess?: () => Promise<void>) {
   if (!email || !password){
     Alert.alert("Pole email lub pole hasło nie zostało poprawnie wypełnione!")
     return
@@ -50,6 +50,10 @@ export default async function loginHandler({ email, password, role, id }: Form) 
 
     if (data.user && data.user.id){
       await SecureStore.setItemAsync('userId', data.user.id.toString());
+    }
+
+    if (onLoginSuccess){
+      await onLoginSuccess();
     }
 
     if (!response.ok){

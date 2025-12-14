@@ -1,8 +1,11 @@
-import React, {useState} from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router'; 
 import LoginForms from '@/components/loginForm';
 import loginHandler from '@/frontToServer/loginHandler';
+import { Ionicons } from '@expo/vector-icons';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as SecureStore from 'expo-secure-store';
 
 const AuthScreen = () => {
   const router = useRouter(); 
@@ -11,8 +14,81 @@ const AuthScreen = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [id, setId] = useState<string>('');
+  const [isFingerprint, setIsFingerprint] = useState(false);
 
+  useEffect(() => {
+    checkFingerprint();
+  }, []);
 
+  const checkFingerprint = async () => {
+    const hasScanner = await LocalAuthentication.hasHardwareAsync();
+    const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+    const savedEmail = await SecureStore.getItemAsync('bio_email');
+    const savedPassword = await SecureStore.getItemAsync('bio_password');
+
+    if (hasScanner && isEnrolled && savedEmail && savedPassword) {
+      setIsFingerprint(true);
+    } else {
+      setIsFingerprint(false);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: 'Zaloguj się do PetHealth',
+      cancelLabel: 'Anuluj',
+    });
+
+    if (result.success) {
+      const bioEmail = await SecureStore.getItemAsync('bio_email');
+      const bioPassword = await SecureStore.getItemAsync('bio_password');
+      const bioRole = await SecureStore.getItemAsync('bio_role') || 'owner';
+      const bioId = await SecureStore.getItemAsync('bio_id') || '';
+
+      if (bioEmail && bioPassword) {
+        await loginHandler({ email: bioEmail, password: bioPassword, role: bioRole, id: bioId });
+      } else {
+        Alert.alert("Błąd", "Dane logowania wygasły. Zaloguj się ręcznie.");
+      }
+    }
+  };
+
+  const handleStandardLogin = () => {
+    loginHandler(
+      { email, password, role, id }, 
+      async () => {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        if (!hasHardware) return;
+
+        return new Promise<void>((resolve) => {
+          Alert.alert(
+            "Logowanie biometryczne",
+            "Czy chcesz używać odcisku palca",
+            [
+              {
+                text: "Nie",
+                style: "cancel",
+                onPress: async () => {
+                    resolve();
+                }
+              },
+              { 
+                text: "Tak", 
+                onPress: async () => {
+                  await SecureStore.setItemAsync('bio_email', email);
+                  await SecureStore.setItemAsync('bio_password', password);
+                  await SecureStore.setItemAsync('bio_role', role);
+                  await SecureStore.setItemAsync('bio_id', id);
+                  resolve();
+                } 
+              }
+            ]
+          );
+        });
+      }
+    );
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -43,10 +119,17 @@ const AuthScreen = () => {
 
         <TouchableOpacity 
           style={styles.primaryButton}
-          onPress={() => loginHandler({ email, password, role, id })} 
+          onPress={handleStandardLogin} 
         >
           <Text style={styles.primaryButtonText}>Zaloguj się</Text>
         </TouchableOpacity>
+
+        {isFingerprint && (
+          <TouchableOpacity style={styles.bioButton} onPress={handleBiometricLogin}>
+            <Ionicons name="finger-print" size={40} color="#3B82F6" />
+            <Text style={styles.bioText}>Zaloguj odciskiem palca</Text>
+          </TouchableOpacity>
+        )}
 
         {/* <TouchableOpacity 
           style={[styles.primaryButton, {backgroundColor: '#555'}]}
@@ -141,6 +224,18 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: '#3B82F6',
     fontSize: 16,
+  },
+  bioButton: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 15,
+    padding: 10,
+  },
+  bioText: {
+    color: '#3B82F6',
+    marginTop: 5,
+    fontSize: 14,
   }
 });
 
