@@ -9,9 +9,9 @@ const getApiUrl = () => {
         return 'http://localhost:3000';
     }
     if (Platform.OS === 'android') {
-        return `http://${matiIP}:3000`; 
+        return `http://${michalIP}:3000`; 
     }
-    return `http://${matiIP}:3000`;
+    return `http://${michalIP}:3000`;
 };
 
 export const API_URL = getApiUrl();
