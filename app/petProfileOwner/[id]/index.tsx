@@ -9,12 +9,7 @@ import {
   Alert,
   Image,
 } from "react-native";
-import {
-  useLocalSearchParams,
-  useRouter,
-  Stack,
-  useFocusEffect,
-} from "expo-router";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import {
   getPetDetailsHandler,
@@ -22,30 +17,6 @@ import {
 } from "@/frontToServer/getPetDetailsHandler";
 import { deletePetHandler } from "@/frontToServer/deletePetHandler";
 import { Feather } from "@expo/vector-icons";
-import { API_URL } from "@/globalIp";
-
-interface MedicalEntry {
-  id: number;
-  petId: number;
-  vetId: number;
-  visitDate: string;
-  visitType: string;
-  diagnosis: string;
-  procedures: string;
-  recommendations: string;
-  medications: string;
-  createdAt: string;
-}
-
-interface StayNote {
-  id: number;
-  petId: number;
-  hotelId: number;
-  checkInDate: string;
-  checkOutDate: string;
-  notes: string;
-  createdAt: string;
-}
 
 const PetProfileOwnerScreen = () => {
   const { id } = useLocalSearchParams();
@@ -53,8 +24,6 @@ const PetProfileOwnerScreen = () => {
 
   const [pet, setPet] = useState<PetDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [medicalEntries, setMedicalEntries] = useState<MedicalEntry[]>([]);
-  const [stayNotes, setStayNotes] = useState<StayNote[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -65,57 +34,15 @@ const PetProfileOwnerScreen = () => {
   );
 
   const loadPetData = async () => {
-    setLoading(true);
     const result = await getPetDetailsHandler(id);
 
     if (result.success && result.data) {
       setPet(result.data);
-      // Pobierz historię medyczną i notatki z pobytu
-      await loadMedicalHistory(id);
-      await loadStayHistory(id);
     } else {
       Alert.alert("Błąd", result.message || "Wystąpił błąd");
       router.back();
     }
     setLoading(false);
-  };
-
-  const loadMedicalHistory = async (petId: any) => {
-    try {
-      const response = await fetch(`${API_URL}/medicalEntries`);
-      if (response.ok) {
-        const allEntries: MedicalEntry[] = await response.json();
-        const petEntries = allEntries.filter(
-          (entry) => entry.petId === parseInt(petId as string)
-        );
-        petEntries.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setMedicalEntries(petEntries);
-      }
-    } catch (error) {
-      console.error("Błąd pobierania historii medycznej:", error);
-    }
-  };
-
-  const loadStayHistory = async (petId: any) => {
-    try {
-      const response = await fetch(`${API_URL}/stayNotes`);
-      if (response.ok) {
-        const allNotes: StayNote[] = await response.json();
-        const petNotes = allNotes.filter(
-          (note) => note.petId === parseInt(petId as string)
-        );
-        petNotes.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setStayNotes(petNotes);
-      }
-    } catch (error) {
-      console.error("Błąd pobierania notatek z pobytu:", error);
-    }
   };
 
   const copyToClipboard = async () => {
@@ -187,22 +114,6 @@ const PetProfileOwnerScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <Stack.Screen
-        options={{
-          headerRight: () => (
-            <View style={{ flexDirection: "row", gap: 15 }}>
-              <TouchableOpacity onPress={handleDeletePress}>
-                <Feather name="trash-2" size={24} color="#EF4444" />
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={goToEdit}>
-                <Feather name="edit-2" size={24} color="#3B82F6" />
-              </TouchableOpacity>
-            </View>
-          ),
-        }}
-      />
-
       <ScrollView style={styles.container}>
         <View style={styles.headerContainer}>
           {pet.photo ? (
@@ -246,50 +157,19 @@ const PetProfileOwnerScreen = () => {
           ) : null}
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            Historia Medyczna ({medicalEntries.length})
-          </Text>
-          {medicalEntries.length === 0 ? (
-            <Text style={styles.emptyText}>
-              Brak wpisów medycznych. Wpisy pojawią się po wizycie u weterynarza.
-            </Text>
-          ) : (
-            medicalEntries.map((entry) => (
-              <View key={entry.id} style={styles.entry}>
-                <Text style={styles.entryDate}>{entry.visitDate}</Text>
-                <Text style={styles.entryTitle}>{entry.visitType}</Text>
-                <Text style={styles.entryDoctor}>Diagnoza: {entry.diagnosis}</Text>
-                {entry.procedures && entry.procedures.trim().length > 0 && (
-                  <Text style={styles.entryDoctor}>Procedury: {entry.procedures}</Text>
-                )}
-                {entry.medications && entry.medications.trim().length > 0 && (
-                  <Text style={styles.entryDoctor}>Leki: {entry.medications}</Text>
-                )}
-              </View>
-            ))
-          )}
-        </View>
+        <View style={styles.buttonsCard}>
+          <TouchableOpacity style={styles.editButton} onPress={goToEdit}>
+            <Feather name="edit-2" size={20} color="#FFF" />
+            <Text style={styles.buttonText}>Edytuj</Text>
+          </TouchableOpacity>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            Pobyty w Hotelu ({stayNotes.length})
-          </Text>
-          {stayNotes.length === 0 ? (
-            <Text style={styles.emptyText}>
-              Brak notatek z pobytu. Notatki pojawią się po pobycie w hotelu.
-            </Text>
-          ) : (
-            stayNotes.map((note) => (
-              <View key={note.id} style={styles.entry}>
-                <Text style={styles.entryDate}>
-                  {note.checkInDate} - {note.checkOutDate}
-                </Text>
-                <Text style={styles.entryTitle}>Pobyt w hotelu</Text>
-                <Text style={styles.entryDoctor}>Notatka: {note.notes}</Text>
-              </View>
-            ))
-          )}
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={handleDeletePress}
+          >
+            <Feather name="trash-2" size={20} color="#FFF" />
+            <Text style={styles.buttonText}>Usuń</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -421,6 +301,42 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     textAlign: "center",
     paddingVertical: 15,
+  },
+  buttonsCard: {
+    flexDirection: "column",
+    justifyContent: "center",
+    gap: 15,
+    marginVertical: 20,
+    paddingHorizontal: 20,
+  },
+  editButton: {
+    flexDirection: "row",
+    backgroundColor: "#3B82F6",
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+    justifyContent: "center",
+    elevation: 2,
+  },
+  deleteButton: {
+    flexDirection: "row",
+    backgroundColor: "#EF4444",
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+    justifyContent: "center",
+    elevation: 2,
+  },
+  buttonText: {
+    color: "#FFF",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 

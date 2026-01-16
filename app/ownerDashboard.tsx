@@ -28,8 +28,6 @@ const OwnerDashboardScreen = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchMyPets = async () => {
-    setLoading(true);
-
     try {
       const userId = await SecureStore.getItemAsync("userId");
 
