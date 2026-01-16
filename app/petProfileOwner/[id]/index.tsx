@@ -9,12 +9,7 @@ import {
   Alert,
   Image,
 } from "react-native";
-import {
-  useLocalSearchParams,
-  useRouter,
-  Stack,
-  useFocusEffect,
-} from "expo-router";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import {
   getPetDetailsHandler,
@@ -39,7 +34,6 @@ const PetProfileOwnerScreen = () => {
   );
 
   const loadPetData = async () => {
-    setLoading(true);
     const result = await getPetDetailsHandler(id);
 
     if (result.success && result.data) {
@@ -120,22 +114,6 @@ const PetProfileOwnerScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <Stack.Screen
-        options={{
-          headerRight: () => (
-            <View style={{ flexDirection: "row", gap: 15 }}>
-              <TouchableOpacity onPress={handleDeletePress}>
-                <Feather name="trash-2" size={24} color="#EF4444" />
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={goToEdit}>
-                <Feather name="edit-2" size={24} color="#3B82F6" />
-              </TouchableOpacity>
-            </View>
-          ),
-        }}
-      />
-
       <ScrollView style={styles.container}>
         <View style={styles.headerContainer}>
           {pet.photo ? (
@@ -179,35 +157,19 @@ const PetProfileOwnerScreen = () => {
           ) : null}
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            Historia Medyczna (Tylko do odczytu)
-          </Text>
-          <View style={styles.entry}>
-            <Text style={styles.entryDate}>01-11-2025</Text>
-            <Text style={styles.entryTitle}>
-              Szczepienie przeciw wściekliźnie
-            </Text>
-            <Text style={styles.entryDoctor}>dr. Jan Kowalski</Text>
-          </View>
-          <View style={styles.entry}>
-            <Text style={styles.entryDate}>15-10-2025</Text>
-            <Text style={styles.entryTitle}>Konsultacja - kulawizna</Text>
-            <Text style={styles.entryDoctor}>dr. Jan Kowalski</Text>
-          </View>
-        </View>
+        <View style={styles.buttonsCard}>
+          <TouchableOpacity style={styles.editButton} onPress={goToEdit}>
+            <Feather name="edit-2" size={20} color="#FFF" />
+            <Text style={styles.buttonText}>Edytuj</Text>
+          </TouchableOpacity>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            Pobyty w Hotelu (Tylko do odczytu)
-          </Text>
-          <View style={styles.entry}>
-            <Text style={styles.entryDate}>10-09-2025 - 15-09-2025</Text>
-            <Text style={styles.entryTitle}>Pobyt w "Psi Raj"</Text>
-            <Text style={styles.entryDoctor}>
-              Notatka: Bardzo grzeczny, dobrze jadł.
-            </Text>
-          </View>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={handleDeletePress}
+          >
+            <Feather name="trash-2" size={20} color="#FFF" />
+            <Text style={styles.buttonText}>Usuń</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -332,6 +294,49 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#374151",
     fontStyle: "italic",
+  },
+  emptyText: {
+    fontSize: 14,
+    color: "#9CA3AF",
+    fontStyle: "italic",
+    textAlign: "center",
+    paddingVertical: 15,
+  },
+  buttonsCard: {
+    flexDirection: "column",
+    justifyContent: "center",
+    gap: 15,
+    marginVertical: 20,
+    paddingHorizontal: 20,
+  },
+  editButton: {
+    flexDirection: "row",
+    backgroundColor: "#3B82F6",
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+    justifyContent: "center",
+    elevation: 2,
+  },
+  deleteButton: {
+    flexDirection: "row",
+    backgroundColor: "#EF4444",
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+    justifyContent: "center",
+    elevation: 2,
+  },
+  buttonText: {
+    color: "#FFF",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 

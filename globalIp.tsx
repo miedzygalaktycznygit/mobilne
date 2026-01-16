@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 
 const michalIP = '192.168.0.95';
-const matiIP = '192.168.0.104';
+const matiIP = '192.168.0.100';
 const kacperIP = '172.20.10.3';
 
 const getApiUrl = () => {

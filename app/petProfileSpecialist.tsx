@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'; 
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from "@/globalIp";
@@ -149,7 +149,15 @@ const PetProfileSpecialistScreen = () => {
       <ScrollView style={styles.container}>
         
         <View style={styles.header}>
-          <View style={styles.petAvatar} />
+          {pet.photo ? (
+            <Image source={{ uri: pet.photo }} style={styles.petAvatar} />
+          ) : (
+            <View style={[styles.petAvatar, styles.placeholderImage]}>
+              <Text style={styles.avatarLetter}>
+                {pet.name.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+          )}
           <View>
             <Text style={styles.petName}>{pet.name}</Text>
             <Text style={styles.petId}>ID: {pet.uniqueId}</Text>
@@ -298,6 +306,15 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     backgroundColor: '#D1D5DB',
     marginRight: 15,
+  },
+  placeholderImage: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarLetter: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FFF',
   },
   petName: {
     fontSize: 22,
