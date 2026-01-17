@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { addMedicalEntryHandler } from '@/frontToServer/addMedicalEntryHandler';
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const AddMedicalEntryScreen = () => {
   const router = useRouter();
   const { petId } = useLocalSearchParams();
   const [loading, setLoading] = useState(false);
+  const [visitDate, setVisitDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [form, setForm] = useState({
     visitDate: '',
@@ -21,17 +24,22 @@ const AddMedicalEntryScreen = () => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("pl-PL");
+  };
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    const currentDate = selectedDate || visitDate;
+    if (Platform.OS === "android") {
+      setShowDatePicker(false);
+    }
+    setVisitDate(currentDate);
+    setForm((prev) => ({ ...prev, visitDate: formatDate(currentDate) }));
+  };
+
   const validateForm = () => {
-    if (!form.visitDate.trim()) {
-      Alert.alert('Błąd', 'Podaj datę wizyty');
-      return false;
-    }
-    if (!form.visitType.trim()) {
-      Alert.alert('Błąd', 'Podaj rodzaj wizyty');
-      return false;
-    }
-    if (!form.diagnosis.trim()) {
-      Alert.alert('Błąd', 'Podaj diagnozę/obserwacje');
+    if (!form.visitDate.trim() || !form.visitType.trim() || !form.diagnosis.trim()) {
+      Alert.alert('Błąd', 'Uzupełnij wymagane pola');
       return false;
     }
     return true;
@@ -71,71 +79,108 @@ const AddMedicalEntryScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.label}>Data wizyty</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="DD-MM-RRRR"
-        value={form.visitDate}
-        onChangeText={(value) => handleInputChange('visitDate', value)}
-      />
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={100}
+    >
+      <ScrollView style={styles.container}>
+        <Text style={styles.label}>
+          Data wizyty<Text style={styles.mandatory}>*</Text>
+        </Text>
+        <TouchableOpacity
+          style={styles.dateInput}
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text style={styles.dateText}>{form.visitDate ? form.visitDate : formatDate(visitDate)}</Text>
+        </TouchableOpacity>
 
-      <Text style={styles.label}>Rodzaj wizyty</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="np. Szczepienie, Konsultacja, Zabieg"
-        value={form.visitType}
-        onChangeText={(value) => handleInputChange('visitType', value)}
-      />
-
-      <Text style={styles.label}>Diagnoza / Obserwacje</Text>
-      <TextInput
-        style={styles.textArea}
-        multiline
-        placeholder="Wpisz diagnozę lub obserwacje..."
-        value={form.diagnosis}
-        onChangeText={(value) => handleInputChange('diagnosis', value)}
-      />
-
-      <Text style={styles.label}>Wykonane procedury</Text>
-      <TextInput
-        style={styles.textArea}
-        multiline
-        placeholder="Wpisz przeprowadzone procedury..."
-        value={form.procedures}
-        onChangeText={(value) => handleInputChange('procedures', value)}
-      />
-
-      <Text style={styles.label}>Zalecenia dla właściciela</Text>
-      <TextInput
-        style={styles.textArea}
-        multiline
-        placeholder="Wpisz zalecenia..."
-        value={form.recommendations}
-        onChangeText={(value) => handleInputChange('recommendations', value)}
-      />
-
-      <Text style={styles.label}>Przepisane leki</Text>
-      <TextInput
-        style={styles.textArea}
-        multiline
-        placeholder="Wpisz przepisane leki..."
-        value={form.medications}
-        onChangeText={(value) => handleInputChange('medications', value)}
-      />
-
-      <TouchableOpacity
-        style={[styles.primaryButton, loading && styles.primaryButtonDisabled]}
-        onPress={handleSave}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#FFF" />
-        ) : (
-          <Text style={styles.primaryButtonText}>Zapisz Wpis Medyczny</Text>
+        {showDatePicker && (
+          <View
+            style={
+              Platform.OS === "ios" ? styles.iosDatePickerContainer : undefined
+            }
+          >
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={visitDate}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={onDateChange}
+              themeVariant="light"
+            />
+            {Platform.OS === "ios" && (
+              <TouchableOpacity
+                onPress={() => setShowDatePicker(false)}
+                style={styles.iosConfirmButton}
+              >
+                <Text style={styles.iosConfirmText}>Gotowe</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
-      </TouchableOpacity>
+
+        <Text style={styles.label}>
+          Rodzaj wizyty<Text style={styles.mandatory}>*</Text>
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="np. Szczepienie, Konsultacja, Zabieg"
+          value={form.visitType}
+          onChangeText={(value) => handleInputChange('visitType', value)}
+        />
+
+        <Text style={styles.label}>
+          Diagnoza / Obserwacje<Text style={styles.mandatory}>*</Text>
+        </Text>
+        <TextInput
+          style={styles.textArea}
+          multiline
+          placeholder="Wpisz diagnozę lub obserwacje..."
+          value={form.diagnosis}
+          onChangeText={(value) => handleInputChange('diagnosis', value)}
+        />
+
+        <Text style={styles.label}>Wykonane procedury</Text>
+        <TextInput
+          style={styles.textArea}
+          multiline
+          placeholder="Wpisz przeprowadzone procedury..."
+          value={form.procedures}
+          onChangeText={(value) => handleInputChange('procedures', value)}
+        />
+
+        <Text style={styles.label}>Zalecenia dla właściciela</Text>
+        <TextInput
+          style={styles.textArea}
+          multiline
+          placeholder="Wpisz zalecenia..."
+          value={form.recommendations}
+          onChangeText={(value) => handleInputChange('recommendations', value)}
+        />
+
+        <Text style={styles.label}>Przepisane leki</Text>
+        <TextInput
+          style={styles.textArea}
+          multiline
+          placeholder="Wpisz przepisane leki..."
+          value={form.medications}
+          onChangeText={(value) => handleInputChange('medications', value)}
+        />
+
+        <TouchableOpacity
+          style={[styles.primaryButton, loading && styles.primaryButtonDisabled]}
+          onPress={handleSave}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.primaryButtonText}>Zapisz Wpis Medyczny</Text>
+          )}
+        </TouchableOpacity>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -160,6 +205,38 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     fontSize: 16,
     marginBottom: 5,
+  },
+  dateInput: {
+    backgroundColor: "#F9FAFB",
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    marginBottom: 5,
+    justifyContent: "center",
+  },
+  dateText: {
+    fontSize: 16,
+    color: "#111827",
+  },
+  iosDatePickerContainer: {
+    backgroundColor: "#FFF",
+    borderRadius: 10,
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  iosConfirmButton: {
+    padding: 10,
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+  },
+  iosConfirmText: {
+    color: "#3B82F6",
+    fontWeight: "bold",
+    fontSize: 16,
   },
   textArea: {
     backgroundColor: '#F9FAFB',
@@ -189,6 +266,9 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  mandatory: {
+    color: '#EF4444',
   },
 });
 
