@@ -45,6 +45,33 @@ export default async function loginHandler({ email, password, role, id }: Form, 
 
     const data = await response.json();
 
+    if (!response.ok){
+      Alert.alert("Błąd logowania", typeof data === 'string' ? data : (data || "Nieznany błąd"));
+      return
+    }
+
+    if (role === 'vet') {
+      if (data.user.role !== 'vet') {
+        Alert.alert("Błąd", "To konto nie należy do weterynarza!");
+        return;
+      }
+      if (data.user.specialId !== id) {
+        Alert.alert("Błąd", "Nieprawidłowy numer licencji weterynarza!");
+        return;
+      }
+    }
+
+    if (role === 'hotel') {
+      if (data.user.role !== 'hotel') {
+        Alert.alert("Błąd", "To konto nie należy do hotelu!");
+        return;
+      }
+      if (data.user.specialId !== id) {
+        Alert.alert("Błąd", "Nieprawidłowy numer licencji hotelu!");
+        return;
+      }
+    }
+
     await SecureStore.setItemAsync('userToken', data.accessToken);
     await SecureStore.setItemAsync('userRole', role);
 
@@ -54,17 +81,6 @@ export default async function loginHandler({ email, password, role, id }: Form, 
 
     if (onLoginSuccess){
       await onLoginSuccess();
-    }
-
-    if (!response.ok){
-      Alert.alert("Błąd logowania", data);
-      return
-    }
-
-    await SecureStore.setItemAsync('userToken', data.accessToken);
-
-    if (data.user && data.user.id) {
-        await SecureStore.setItemAsync('userId', data.user.id.toString());
     }
 
     switch (role){
