@@ -26,12 +26,12 @@ describe('logowanie i rejestracja', () => {
 
   test('czzy działa jak nie ma emmaila lub hasła', async () => {
     await registerHandler({ email: '', password: '', role: 'owner', id: '' });
-    expect(Alert.alert).toHaveBeenCalledWith("nie wypełniono pola maila albo hasła");
+    expect(Alert.alert).toHaveBeenCalledWith("Pole email lub hasło nie zostało wypełnione.");
   });
 
   test('jak hasło jest za krotkie', async () => {
     await registerHandler({ email: 'test@test.pl', password: '123', role: 'owner', id: '' });
-    expect(Alert.alert).toHaveBeenCalledWith("haslo na min 4 znaki");
+    expect(Alert.alert).toHaveBeenCalledWith("Hasło powinno mieć conajmniej 4 znaki.");
   });
 
   test('jak jest git', async () => {
@@ -54,13 +54,13 @@ describe('logowanie i rejestracja', () => {
         })
       })
     );
-    expect(Alert.alert).toHaveBeenCalledWith("działa");
+    expect(Alert.alert).toHaveBeenCalledWith("Konto utworzone! Zaloguj się.");
     expect(result).toBe(true);
   });
 
   test('czy pola są puste', async () => {
     await loginHandler({ email: '', password: '', role: 'owner', id: '' });
-    expect(Alert.alert).toHaveBeenCalledWith(expect.stringContaining("pola są puste"));
+    expect(Alert.alert).toHaveBeenCalledWith("Pole email lub pole hasło nie zostało poprawnie wypełnione!");
   });
 
   test('czy zaloguje poprawnie', async () => {
@@ -81,6 +81,6 @@ describe('logowanie i rejestracja', () => {
 
   test('czy jest licencja', async () => {
     await loginHandler({ email: 'vet@test.pl', password: 'password', role: 'vet', id: '' });
-    expect(global.alert).toHaveBeenCalledWith("nie ma ID veta");
+    expect(global.alert).toHaveBeenCalledWith("Podaj numer licencji weterynarza!");
   });
 });
